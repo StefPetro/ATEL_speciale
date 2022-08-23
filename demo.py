@@ -1,4 +1,4 @@
-from dpu_loader import BookCollection
+from atel.data import BookCollection
 
 # load all books
 book_col = BookCollection(data_file='./book_col_271120.pkl')
