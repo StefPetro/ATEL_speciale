@@ -1,4 +1,7 @@
+data
+data/..
 book_col_271120.pkl
+gyldendalbooks.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
