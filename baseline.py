@@ -5,9 +5,12 @@ from nltk.corpus import stopwords
 import lemmy
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import RidgeClassifier
+from sklearn.multioutput import MultiOutputClassifier
 from atel.data import BookCollection
 from data_clean import *
 
@@ -28,15 +31,30 @@ for t in texts:
 
 
 ## Create bag of words (CountVectorizer)
-tfidfvectorizer = TfidfVectorizer(max_features=1500, min_df=3, max_df=0.8, 
+tfidfvectorizer = TfidfVectorizer(max_features=1500, min_df=3, max_df=0.75, 
                                   stop_words=stopwords.words('danish'))
 
 
 X = tfidfvectorizer.fit_transform(documents).toarray()
 
-print(X.shape)
-print(X)
+# Genre, Perspektiv, Tekstbånd, Fremstillingsform, Semantisk univers, Holistisk vurdering, Stemmer
 
+target_ids, targets, labels = get_labels(book_col, 'Genre')
 
-model = RandomForestClassifier(n_estimators=1000, random_state=42)
+mask = np.isin(target_ids, book_ids)
+y = targets[mask]
+print(f'Number of samples: {y.shape[0]}')
+print(f'Number of labels: {y.shape[1]}')
+print(labels)
 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# clf = RandomForestClassifier(n_estimators=1000, random_state=42)
+clf = RidgeClassifier(random_state=42)
+model = MultiOutputClassifier(clf)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+# print(classification_report(y_test, y_pred))
+print(accuracy_score(y_test, y_pred))
