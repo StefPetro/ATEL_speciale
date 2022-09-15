@@ -1,9 +1,20 @@
 import re
+import random
+import torch
 from typing import Tuple
 import numpy as np
 import pandas as pd
 import atel
 from atel.data import BookCollection
+
+
+def set_seed(seed: int=42) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    print(f'Seed has been set to {seed}')
+
 
 """ Initial Text Cleaning """
 
@@ -24,7 +35,8 @@ def clean_book_text(book: atel.data.Book) -> str:
 
 def clean_book_collection_texts(
     book_col: atel.data.BookCollection, include_empty_texts: bool = False
-):
+    ) -> Tuple[list, list]:
+    
     book_ids = []
     texts = []
 
@@ -56,9 +68,7 @@ def get_text_level_data(book_col: atel.data.BookCollection) -> list:
     return data
 
 
-def get_labels(
-    book_col: atel.data.BookCollection, target_col: str
-) -> Tuple[np.ndarray, np.ndarray, list]:
+def get_labels(book_col: atel.data.BookCollection, target_col: str) -> Tuple[np.ndarray, np.ndarray, list]:
     list_cols = [  # columns that consists of lists
         "Genre",
         "Attitude",

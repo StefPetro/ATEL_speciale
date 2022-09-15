@@ -16,6 +16,9 @@ from sklearn.naive_bayes import GaussianNB, MultinomialNB
 from atel.data import BookCollection
 from data_clean import *
 
+## Set seed
+set_seed(42)
+
 ## Initial load and clean
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 book_ids, texts = clean_book_collection_texts(book_col)
@@ -60,12 +63,12 @@ print(f"Number of labels: {y.shape[1]}")
 print(labels)
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+    X, y, test_size=0.2
 )
 
 # clf = MultinomialNB()
 # clf = RandomForestClassifier(n_estimators=1000, random_state=42)
-clf = RidgeClassifier(random_state=42)
+clf = RidgeClassifier()
 # clf = GaussianNB()
 model = MultiOutputClassifier(clf)
 model.fit(X_train, y_train)
