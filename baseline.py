@@ -19,6 +19,34 @@ from data_clean import *
 ## Set seed
 set_seed(42)
 
+
+def evaluator(target_col, clf):
+
+    target_ids, targets, labels = get_labels(book_col, target_col)
+
+    mask = np.isin(target_ids, book_ids)
+    y = targets[mask]
+
+    print(f"Number of samples: {y.shape[0]}")
+    print(f"Number of labels: {y.shape[1]}")
+    print(labels)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    model = MultiOutputClassifier(clf)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    # print(classification_report(y_test, y_pred))
+    print(f"Accuracy Score: {accuracy_score(y_test, y_pred)}")
+    print(f"CV score: {np.mean(cross_val_score(model, X_train, y_train, cv=5))}")
+
+    return accuracy_score(y_test, y_pred), np.mean(
+        cross_val_score(model, X_train, y_train, cv=5)
+    )
+
+
 ## Initial load and clean
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 book_ids, texts = clean_book_collection_texts(book_col)
@@ -53,29 +81,18 @@ target_cols = [
     "Stemmer",
 ]
 
-target_ids, targets, labels = get_labels(book_col, target_cols[1])
-
-mask = np.isin(target_ids, book_ids)
-y = targets[mask]
-
-print(f"Number of samples: {y.shape[0]}")
-print(f"Number of labels: {y.shape[1]}")
-print(labels)
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2
-)
 
 # clf = MultinomialNB()
 # clf = RandomForestClassifier(n_estimators=1000, random_state=42)
 clf = RidgeClassifier()
 # clf = GaussianNB()
-model = MultiOutputClassifier(clf)
-model.fit(X_train, y_train)
 
-y_pred = model.predict(X_test)
+accuracy = []
+cv_score = []
+for t in target_cols:
+    acc, cv = evaluator(t, clf)
+    accuracy.append(acc)
+    cv_score.append(cv)
 
-# print(classification_report(y_test, y_pred))
-print(f"Accuracy Score: {accuracy_score(y_test, y_pred)}")
-
-print(f"CV score: {np.mean(cross_val_score(model, X_train, y_train, cv=5))}")
+print(np.mean(accuracy))
+print(np.mean(cv_score))

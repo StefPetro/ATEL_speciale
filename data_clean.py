@@ -46,7 +46,7 @@ def clean_book_text(book: atel.data.Book) -> str:
 def clean_book_collection_texts(
     book_col: atel.data.BookCollection,
     include_empty_texts: bool = False,
-    lowercase=True,
+    lowercase: bool = True,
 ) -> Tuple[list, list]:
 
     book_ids = []
