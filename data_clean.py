@@ -1,11 +1,13 @@
 import re
 import random
-import torch
 from typing import Tuple
+import fasttext
+import torch
 import numpy as np
 import pandas as pd
 import atel
 from atel.data import BookCollection
+from torch.nn.utils.rnn import pad_sequence
 
 
 def set_seed(seed: int = 42) -> None:
@@ -128,3 +130,18 @@ def get_labels(
     target_ids = np.array(one_hot_df.index)
 
     return target_ids, targets, labels
+
+
+def get_fasttext_embeddings(book_col: atel.data.BookCollection, seq_len: int) -> torch.Tensor:
+    print('Loading fastText model...')
+    ft = fasttext.load_model('fasttext_model/cc.da.300.bin')  # Download from fastTexts website
+    print('Loading complete!')
+    book_ids, texts = clean_book_collection_texts(book_col, lowercase=False)
+
+    el = [torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(' ')])) for t in texts]
+    el_padded = pad_sequence(el, batch_first=True)[:, :seq_len, :]
+    
+    assert el_padded.shape[1:] == torch.Size([seq_len, 300]), 'Sequence length is not equal max length'
+
+    return book_ids, el_padded
+
