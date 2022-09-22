@@ -1,14 +1,13 @@
 from typing import Union, Tuple, Optional
-
-from sklearn.model_selection import KFold
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, TensorDataset, random_split
-import numpy as np
+from torch.utils.data import DataLoader, TensorDataset, random_split, dataset
+from sklearn.model_selection import KFold
 
+import fasttext
 import pytorch_lightning as pl
-from pytorch_lightning import Trainer
 from data_clean import *
 
 settings = {
@@ -58,6 +57,7 @@ class lstm_text(pl.LightningModule):
         optim = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optim
     
+    
     def forward(self, x):
         # lstm input: (N, L, H_in) = (batch_size, seq_len, embedding_size)
         lstm_out, (h_n, c_n) = self.lstm(x)
@@ -81,36 +81,57 @@ class lstm_text(pl.LightningModule):
         return loss
 
 
-## TODO: implement K-fold Cross validation - make sure it's the same folds for all tasks
+## TODO: make fastText model an input, such that it is initialized from outside the model
 class lstm_data(pl.LightningDataModule):
-    def __init__(self, book_col, target_col: str, seq_len: int = 256, 
-                       k: int = 0, batch_size: int = 32):
+    def __init__(
+            self,
+            book_col,
+            target_col: str,
+            ft: fasttext.FastText,
+            seq_len: int = 256,
+            batch_size: int = 32,
+            k: int = 0,
+            seed: int = 42,
+            num_splits: int = 10,
+        ):
         super().__init__()
-        self.book_col   = book_col
-        self.k          = k
-        self.batch_size = batch_size
-        self.target_col = target_col
-        self.seq_len    = seq_len
+        
+        
+        
+        self.book_col       = book_col
+        self.k              = k
+        self.batch_size     = batch_size
+        self.target_col     = target_col
+        self.ft             = ft
+        self.seq_len        = seq_len
+        self.seed           = seed
+        self.num_splits     = num_splits
     
     
     def setup(self, stage: Optional[str] = None):
         
-        book_ids, X = get_fasttext_embeddings(self.book_col, self.seq_len)
+        book_ids, X = get_fasttext_embeddings(self.book_col, self.ft, self.seq_len)
         target_ids, targets, labels = get_labels(self.book_col, self.target_col)
 
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
         y = torch.from_numpy(targets[mask]).float()
-        
-        train_size = int(len(y)*0.9)
-        val_size = len(y) - train_size 
-        
-        print(X.shape, y.shape)
+               
         full_data = TensorDataset(X, y)
-        self.train_data, self.val_data = random_split(full_data, [train_size, val_size])
+        
+        kf = KFold(n_splits=self.num_splits, shuffle=True, random_state=self.seed)
+        all_splits = [k for k in kf.split(full_data)]
+        
+        train_idx, val_idx = all_splits[self.k]
+        train_idx, val_idx = train_idx.tolist(), val_idx.tolist()
+        
+        self.train_data = dataset.Subset(full_data, train_idx)
+        self.val_data   = dataset.Subset(full_data, val_idx)
 
+    
     def train_dataloader(self):
         return DataLoader(self.train_data, batch_size=self.batch_size)
 
+    
     def val_dataloader(self):
         return DataLoader(self.val_data, batch_size=self.batch_size)
 

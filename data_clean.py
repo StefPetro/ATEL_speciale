@@ -1,13 +1,13 @@
 import re
 import random
 from typing import Tuple
-import fasttext
-import torch
 import numpy as np
 import pandas as pd
-import atel
-from atel.data import BookCollection
+import fasttext
+import torch
 from torch.nn.utils.rnn import pad_sequence
+import atel.data
+from sklearn.model_selection import KFold
 
 
 def set_seed(seed: int = 42) -> None:
@@ -132,10 +132,12 @@ def get_labels(
     return target_ids, targets, labels
 
 
-def get_fasttext_embeddings(book_col: atel.data.BookCollection, seq_len: int) -> torch.Tensor:
-    print('Loading fastText model...')
-    ft = fasttext.load_model('fasttext_model/cc.da.300.bin')  # Download from fastTexts website
-    print('Loading complete!')
+def get_fasttext_embeddings(
+        book_col: atel.data.BookCollection, 
+        ft: fasttext.FastText,
+        seq_len: int
+    
+    ) -> torch.Tensor:
     book_ids, texts = clean_book_collection_texts(book_col, lowercase=False)
 
     el = [torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(' ')])) for t in texts]

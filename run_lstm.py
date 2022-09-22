@@ -1,8 +1,16 @@
 from atel.data import BookCollection
+from data_clean import set_seed
 from lstm_model import lstm_data, lstm_text
 from pytorch_lightning import Trainer
+import fasttext
+
+set_seed(42)
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
+
+print('Loading fastText model...')
+ft = fasttext.load_model('fasttext_model/cc.da.300.bin')  # Download from fastTexts website
+print('Loading complete!')
 
 settings = {
     'multi_label': True,
@@ -16,7 +24,7 @@ settings = {
 }
 
 model = lstm_text(**settings)
-data = lstm_data(book_col, 'Genre')
+data = lstm_data(book_col, 'Genre', ft)
 trainer = Trainer(max_epochs=1)
 
 trainer.fit(model, data)
