@@ -21,7 +21,7 @@ from data_clean import *
 set_seed(42)
 
 
-def evaluator(target_col, clf):
+def evaluator(X, target_col, clf):
 
     target_ids, targets, labels = get_labels(book_col, target_col)
 
@@ -93,7 +93,7 @@ cv_score = []
 
 scores = {}
 for t in target_cols:
-    acc, cv = evaluator(t, clf)
+    acc, cv = evaluator(X, t, clf)
     accuracy.append(acc)
     cv_score.append(cv)
 
