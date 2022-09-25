@@ -3,6 +3,7 @@ import re
 
 import lemmy
 import numpy as np
+import pandas as pd
 import spacy
 from nltk.corpus import stopwords
 from sklearn.ensemble import RandomForestClassifier
@@ -89,10 +90,16 @@ clf = RidgeClassifier()
 
 accuracy = []
 cv_score = []
+
+scores = {}
 for t in target_cols:
     acc, cv = evaluator(t, clf)
     accuracy.append(acc)
     cv_score.append(cv)
+
+    scores[t] = {"accuracy": acc, "cv": cv}
+
+print(pd.DataFrame(scores))
 
 print(np.mean(accuracy))
 print(np.mean(cv_score))
