@@ -12,7 +12,7 @@ import torchmetrics
 from data_clean import *
 
 settings = {
-    'multi_label': False,
+    'multi_label': True,
     'n_features': 300, 
     "hidden_size": 256, 
     "num_layers": 1, 
@@ -48,11 +48,15 @@ class lstm_text(pl.LightningModule):
         self.out_layer = nn.Linear(in_features  = self.hidden_size*2,  # times 2 because bidirectional
                                    out_features = self.output_size)
         
-        self.accuracy = torchmetrics.Accuracy()
+        
         if self.multi_label:  # if we are trying to solve a multi label problem
             self.loss_func = nn.BCEWithLogitsLoss()
+            self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
+            self.logit_func = nn.Sigmoid()
         else:
             self.loss_func = nn.CrossEntropyLoss()
+            self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
+            self.logit_func = nn.Softmax()
             
     
     def configure_optimizers(self):
@@ -73,7 +77,7 @@ class lstm_text(pl.LightningModule):
         x, y = train_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(y_hat, y.int())
+        acc = self.accuracy(self.logit_func(y_hat), y.int())
         
         self.log('train_loss_step', loss)
         self.log('train_acc_step', acc)  # geting acc like this - see docs
@@ -84,7 +88,7 @@ class lstm_text(pl.LightningModule):
         x, y = val_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(y_hat, y.int())
+        acc = self.accuracy(self.logit_func(y_hat), y.int())
         
         self.log('val_loss_step', loss)
         self.log('val_acc_step', acc)
@@ -92,6 +96,7 @@ class lstm_text(pl.LightningModule):
 
     
     def validation_epoch_end(self, outputs) -> None:
+
         loss = torch.stack([out['loss'] for out in outputs]).mean()
         self.log("avg_val_loss", loss)
 
