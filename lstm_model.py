@@ -8,6 +8,7 @@ from sklearn.model_selection import KFold
 
 import fasttext
 import pytorch_lightning as pl
+import torchmetrics
 from data_clean import *
 
 settings = {
@@ -47,6 +48,7 @@ class lstm_text(pl.LightningModule):
         self.out_layer = nn.Linear(in_features  = self.hidden_size*2,  # times 2 because bidirectional
                                    out_features = self.output_size)
         
+        self.accuracy = torchmetrics.Accuracy()
         if self.multi_label:  # if we are trying to solve a multi label problem
             self.loss_func = nn.BCEWithLogitsLoss()
         else:
@@ -71,17 +73,32 @@ class lstm_text(pl.LightningModule):
         x, y = train_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        return loss
+        acc = self.accuracy(y_hat, y.int())
+        
+        self.log('train_loss_step', loss)
+        self.log('train_acc_step', acc)  # geting acc like this - see docs
+        return {'loss': loss, 'acc': acc}
     
     
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        return loss
+        acc = self.accuracy(y_hat, y.int())
+        
+        self.log('val_loss_step', loss)
+        self.log('val_acc_step', acc)
+        return {'loss': loss, 'acc': acc}
+
+    
+    def validation_epoch_end(self, outputs) -> None:
+        loss = torch.stack([out['loss'] for out in outputs]).mean()
+        self.log("avg_val_loss", loss)
+
+        acc = torch.stack([out['acc'] for out in outputs]).mean()
+        self.log("avg_val_acc", acc)
 
 
-## TODO: make fastText model an input, such that it is initialized from outside the model
 class lstm_data(pl.LightningDataModule):
     def __init__(
             self,
@@ -95,8 +112,6 @@ class lstm_data(pl.LightningDataModule):
             num_splits: int = 10,
         ):
         super().__init__()
-        
-        
         
         self.book_col       = book_col
         self.k              = k
