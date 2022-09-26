@@ -1,7 +1,5 @@
 data
 data/..
-book_col_271120.pkl
-gyldendalbooks.txt
 fasttext_model/
 lightning_logs/
 
