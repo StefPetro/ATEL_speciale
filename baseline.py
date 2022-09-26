@@ -13,6 +13,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.naive_bayes import GaussianNB, MultinomialNB
+from sklearn.model_selection import KFold
 
 from atel.data import BookCollection
 from data_clean import *
@@ -39,13 +40,16 @@ def evaluator(X, target_col, clf):
 
     y_pred = model.predict(X_test)
 
-    # print(classification_report(y_test, y_pred))
-    print(f"Accuracy Score: {accuracy_score(y_test, y_pred)}")
-    print(f"CV score: {np.mean(cross_val_score(model, X_train, y_train, cv=5))}")
+    kf = KFold(n_splits=10, shuffle=True, random_state=42)
 
-    return accuracy_score(y_test, y_pred), np.mean(
-        cross_val_score(model, X_train, y_train, cv=5)
-    )
+    # print(classification_report(y_test, y_pred))
+    acc = accuracy_score(y_test, y_pred)
+    cv_score = np.mean(cross_val_score(model, X_train, y_train, cv=kf))
+
+    print(f"Accuracy Score: {acc}")
+    print(f"CV score: {cv_score}")
+
+    return acc, cv_score
 
 
 ## Initial load and clean
