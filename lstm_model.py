@@ -31,6 +31,7 @@ class lstm_text(pl.LightningModule):
         self.n_features    = kwargs.get('n_features',    300)
         self.hidden_size   = kwargs.get('hidden_size',   256)
         self.num_layers    = kwargs.get("num_layers",    1)
+        self.num_l1        = kwargs.get("num_l1",        256)
         self.dropout       = kwargs.get("dropout",       0.2)
         self.batch_size    = kwargs.get("batch_size",    32)
         self.learning_rate = kwargs.get('learning_rate', 1e-4)
@@ -45,31 +46,37 @@ class lstm_text(pl.LightningModule):
 
         self.dropout = nn.Dropout(p=0.2)
         
-        self.out_layer = nn.Linear(in_features  = self.hidden_size*2,  # times 2 because bidirectional
+        self.l1        = nn.Linear(in_features  = self.hidden_size*2,  # times 2 if lstm is bidirectional
+                                   out_features = self.num_l1)
+        
+        self.out_layer = nn.Linear(in_features  = self.num_l1,
                                    out_features = self.output_size)
         
         
         if self.multi_label:  # if we are trying to solve a multi label problem
+            print('Set to multi label classification')
             self.loss_func = nn.BCEWithLogitsLoss()
             self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
             self.logit_func = nn.Sigmoid()
         else:
+            print('Set to multi class classification')
             self.loss_func = nn.CrossEntropyLoss()
             self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
             self.logit_func = nn.Softmax()
             
     
     def configure_optimizers(self):
-        optim = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optim = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
         return optim
     
     
     def forward(self, x):
         # lstm input: (N, L, H_in) = (batch_size, seq_len, embedding_size)
         lstm_out, (h_n, c_n) = self.lstm(x)
-        out = self.dropout(lstm_out)
-        out = F.gelu(out)
-        out = self.out_layer(out[:, -1])
+        out = F.gelu(lstm_out[:, -1])
+        out = self.dropout(out)
+        out = self.l1(out)
+        out = self.out_layer(out)
         return out
     
     
@@ -80,7 +87,7 @@ class lstm_text(pl.LightningModule):
         acc = self.accuracy(self.logit_func(y_hat), y.int())
         
         self.log('train_loss_step', loss)
-        self.log('train_acc_step', acc)  # geting acc like this - see docs
+        self.log('train_acc_step', acc)
         return {'loss': loss, 'acc': acc}
     
     
@@ -96,7 +103,6 @@ class lstm_text(pl.LightningModule):
 
     
     def validation_epoch_end(self, outputs) -> None:
-
         loss = torch.stack([out['loss'] for out in outputs]).mean()
         self.log("avg_val_loss", loss)
 

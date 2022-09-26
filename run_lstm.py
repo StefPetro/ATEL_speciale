@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 10
+NUM_EPOCHS = 3
 set_seed(SEED)
 
 ## Load the data
@@ -26,11 +26,12 @@ print('Loading complete!')
 settings = {
     'multi_label': True,
     'n_features': 300, 
-    "hidden_size": 256*2, 
-    "num_layers": 2, 
+    "hidden_size": 256, 
+    "num_layers": 1,
+    "num_l1": 256,
     "dropout": 0.2, 
-    "batch_size": 16, 
-    "learning_rate" : 5e-5,
+    "batch_size": 1,
+    "learning_rate" : 1e-5,
     "output_size": 15
 }
 
@@ -46,8 +47,10 @@ for k in range(num_folds):
     data = lstm_data(
         book_col=book_col, 
         target_col=target_col, 
-        ft=ft, batch_size=settings['batch_size'], 
-        seed=SEED, 
+        ft=ft, 
+        batch_size=settings['batch_size'], 
+        seq_len=128,
+        seed=SEED,
         k=k
     )
     logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=f'{target_col}-cv{k}-max_epoch_{NUM_EPOCHS}')
@@ -56,7 +59,7 @@ for k in range(num_folds):
         max_epochs = NUM_EPOCHS,
         gpus = 1 if torch.cuda.is_available() else 0,
         log_every_n_steps = 1,
-        logger = logger
+        logger = None
     )
     trainer.fit(model, data)
     
