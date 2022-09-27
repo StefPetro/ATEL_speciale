@@ -76,6 +76,7 @@ class lstm_text(pl.LightningModule):
         out = F.gelu(lstm_out[:, -1])
         out = self.dropout(out)
         out = self.l1(out)
+        out = F.gelu(out)
         out = self.out_layer(out)
         return out
     

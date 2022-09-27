@@ -40,7 +40,7 @@ def clean_book_text(book: atel.data.Book) -> str:
     s = s.replace("\t", " ").replace("\n", " ")
     s = re.sub("[^[a-zA-Z0-9æøåÆØÅ\s.!?-]", " ", s)
     s = re.sub("\s+", " ", s)  # removes trailing whitespaces
-    #    s = s.lower().strip()
+    s = s.strip()
 
     return s
 
@@ -143,7 +143,7 @@ def get_fasttext_embeddings(
     el = [torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(' ')])) for t in texts]
     el_padded = pad_sequence(el, batch_first=True)[:, :seq_len, :]
     
-    assert el_padded.shape[1:] == torch.Size([seq_len, 300]), 'Sequence length is not equal max length'
+    assert el_padded.shape[1] == seq_len, 'Sequence length is not equal max length'
 
     return book_ids, el_padded
 
