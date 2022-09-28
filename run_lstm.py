@@ -69,6 +69,5 @@ for k in range(num_folds):
     
     score2 = val_scores['val_acc_step']
     results2.append(score2)
-    break
 
 print(np.mean(results1), np.mean(results2))
