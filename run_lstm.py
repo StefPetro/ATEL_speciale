@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 3
+NUM_EPOCHS = 20
 set_seed(SEED)
 
 ## Load the data
@@ -59,6 +59,7 @@ for k in range(num_folds):
         max_epochs = NUM_EPOCHS,
         gpus = 1 if torch.cuda.is_available() else 0,
         log_every_n_steps = 1,
+        enable_checkpointing = False,
         logger = None
     )
     trainer.fit(model, data)
@@ -69,5 +70,7 @@ for k in range(num_folds):
     
     score2 = val_scores['val_acc_step']
     results2.append(score2)
+    print('Done!')
+    break
 
 print(np.mean(results1), np.mean(results2))

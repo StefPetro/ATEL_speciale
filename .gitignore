@@ -3,6 +3,8 @@ data/..
 fasttext_model/
 lightning_logs/checkpoints
 checkpoints/
+*.err
+*.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
