@@ -1,13 +1,10 @@
 #!/bin/sh 
 
-
 # Load dependencies
 module load python3/3.9.14
 
-python3 -m pip install --user -r requirements.txt
+source ../venv/bin/activate
 
-# module load matplotlib/3.4.2-numpy-1.21.1-python-3.9.6
-module load pandas/1.3.1-python-3.9.14
 module load cuda/11.5
 module load cudnn/v8.3.0.98-prod-cuda-11.5
 ### General options 
