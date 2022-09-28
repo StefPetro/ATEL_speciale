@@ -66,7 +66,7 @@ class lstm_text(pl.LightningModule):
             
     
     def configure_optimizers(self):
-        optim = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+        optim = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=1e-3)
         return optim
     
     
