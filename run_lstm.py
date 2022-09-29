@@ -27,7 +27,7 @@ settings = {
     'multi_label': True,
     'n_features': 300, 
     "hidden_size": 128, 
-    "num_layers": 4,
+    "num_layers": 2,
     "num_l1": 256*4,
     "dropout": 0.2, 
     "batch_size": 256,
@@ -53,7 +53,7 @@ for k in range(num_folds):
         seed=SEED,
         k=k
     )
-    logger_name = f'{target_col.replace(" ", "_")}-cv{k}-max_epoch_{NUM_EPOCHS}'
+    logger_name = f'{target_col.replace(" ", "_")}-cv{k}-max_epoch_{NUM_EPOCHS}-num_lstm_layers_{settings["num_layers"]}'
     logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=logger_name)
     
     trainer = Trainer(
