@@ -53,7 +53,8 @@ for k in range(num_folds):
         seed=SEED,
         k=k
     )
-    logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=f'{target_col}-cv{k}-max_epoch_{NUM_EPOCHS}')
+    logger_name = f'{target_col.replace(" ", "_")}-cv{k}-max_epoch_{NUM_EPOCHS}'
+    logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=logger_name)
     
     trainer = Trainer(
         max_epochs = NUM_EPOCHS,
