@@ -30,7 +30,7 @@ settings = {
     "num_layers": 4,
     "num_l1": 256*4,
     "dropout": 0.2, 
-    "batch_size": 800,
+    "batch_size": 256,
     "learning_rate" : 1e-5,
     "output_size": 21
 }
