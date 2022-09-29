@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 25
+NUM_EPOCHS = 100
 set_seed(SEED)
 
 ## Load the data
@@ -30,7 +30,7 @@ settings = {
     "num_layers": 4,
     "num_l1": 256*4,
     "dropout": 0.2, 
-    "batch_size": 128,
+    "batch_size": 800,
     "learning_rate" : 1e-5,
     "output_size": 21
 }
@@ -49,7 +49,7 @@ for k in range(num_folds):
         target_col=target_col, 
         ft=ft, 
         batch_size=settings['batch_size'], 
-        seq_len=128,
+        seq_len=171,
         seed=SEED,
         k=k
     )
@@ -61,7 +61,7 @@ for k in range(num_folds):
         gpus = 1 if torch.cuda.is_available() else 0,
         log_every_n_steps = 1,
         enable_checkpointing = False,
-        logger = None
+        logger = logger
     )
     trainer.fit(model, data)
     
