@@ -48,9 +48,6 @@ class lstm_text(pl.LightningModule):
 
         self.dropout = nn.Dropout(p=0.2)
         
-        self.l1        = nn.Linear(in_features  = self.hidden_size*2,  # times 2 if lstm is bidirectional
-                                   out_features = self.num_l1)
-        
         self.out_layer = nn.Linear(in_features  = self.num_l1,
                                    out_features = self.output_size)
         
@@ -75,11 +72,7 @@ class lstm_text(pl.LightningModule):
     def forward(self, x):
         # lstm input: (N, L, H_in) = (batch_size, seq_len, embedding_size)
         lstm_out, (h_n, c_n) = self.lstm(x)
-        out = F.gelu(lstm_out[:, -1])
-        out = self.dropout(out)
-        out = self.l1(out)
-        out = F.gelu(out)
-        out = self.dropout(out)
+        out = self.dropout(lstm_out[:, -1])
         out = self.out_layer(out)
         return out
     
