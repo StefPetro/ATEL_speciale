@@ -31,7 +31,6 @@ class lstm_text(pl.LightningModule):
         self.n_features    = kwargs.get('n_features',    300)
         self.hidden_size   = kwargs.get('hidden_size',   256)
         self.num_layers    = kwargs.get("num_layers",    1)
-        self.num_l1        = kwargs.get("num_l1",        256)
         self.dropout       = kwargs.get("dropout",       0.2)
         self.batch_size    = kwargs.get("batch_size",    32)
         self.learning_rate = kwargs.get('learning_rate', 1e-4)

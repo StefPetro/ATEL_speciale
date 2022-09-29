@@ -28,10 +28,9 @@ print('Loading complete!')
 settings = {
     'multi_label': True,
     'n_features': 100, 
-    "hidden_size": 128, 
-    "num_layers": 2,
-    "num_l1": 256*4,
-    "dropout": 0.2, 
+    "hidden_size": 128,
+    "num_layers": 4,
+    "dropout": 0.2,
     "batch_size": 64,
     "learning_rate" : 1e-5,
     "output_size": 21
