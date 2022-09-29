@@ -21,11 +21,12 @@ book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 # https://fasttext.cc/docs/en/crawl-vectors.html
 print('Loading fastText model...')
 ft = fasttext.load_model('fasttext_model/cc.da.300.bin')  # Download from fastTexts website
+fasttext.util.reduce_model(ft, 100)
 print('Loading complete!')
 
 settings = {
     'multi_label': True,
-    'n_features': 300, 
+    'n_features': 100, 
     "hidden_size": 128, 
     "num_layers": 2,
     "num_l1": 256*4,
