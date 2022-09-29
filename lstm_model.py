@@ -48,7 +48,7 @@ class lstm_text(pl.LightningModule):
 
         self.dropout = nn.Dropout(p=0.2)
         
-        self.out_layer = nn.Linear(in_features  = self.num_l1,
+        self.out_layer = nn.Linear(in_features  = self.hidden_size*2,  # multiplied by 2 if bidirectional
                                    out_features = self.output_size)
         
         
