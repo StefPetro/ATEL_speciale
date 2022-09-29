@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 100
+NUM_EPOCHS = 200
 set_seed(SEED)
 
 ## Load the data
@@ -26,7 +26,7 @@ print('Loading complete!')
 settings = {
     'multi_label': True,
     'n_features': 300, 
-    "hidden_size": 256*8, 
+    "hidden_size": 128, 
     "num_layers": 4,
     "num_l1": 256*4,
     "dropout": 0.2, 
