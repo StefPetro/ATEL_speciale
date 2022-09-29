@@ -6,12 +6,13 @@ import torch
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 import fasttext
+import fasttext.util
 
 import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 200
+NUM_EPOCHS = 100
 set_seed(SEED)
 
 ## Load the data
@@ -31,7 +32,7 @@ settings = {
     "num_layers": 2,
     "num_l1": 256*4,
     "dropout": 0.2, 
-    "batch_size": 256,
+    "batch_size": 64,
     "learning_rate" : 1e-5,
     "output_size": 21
 }
