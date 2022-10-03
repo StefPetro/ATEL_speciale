@@ -27,10 +27,10 @@ settings = {
     'multi_label': True,
     'n_features': 300, 
     "hidden_size": 256*8, 
-    "num_layers": 4,
-    "num_l1": 256*4,
+    "num_layers": 8,
+#    "num_l1": 256*4,
     "dropout": 0.2, 
-    "batch_size": 128,
+    "batch_size": 64,
     "learning_rate" : 1e-5,
     "output_size": 21
 }
@@ -61,7 +61,7 @@ for k in range(num_folds):
         gpus = 1 if torch.cuda.is_available() else 0,
         log_every_n_steps = 1,
         enable_checkpointing = False,
-        logger = None
+        logger = logger
     )
     trainer.fit(model, data)
     
