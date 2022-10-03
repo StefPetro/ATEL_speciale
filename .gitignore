@@ -5,6 +5,7 @@ lightning_logs/checkpoints
 checkpoints/
 *.err
 *.out
+test_trainer/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
