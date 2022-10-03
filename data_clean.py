@@ -138,7 +138,7 @@ def get_fasttext_embeddings(
         seq_len: int
     
     ) -> torch.Tensor:
-    book_ids, texts = clean_book_collection_texts(book_col, lowercase=True)
+    book_ids, texts = clean_book_collection_texts(book_col, lowercase=False)
 
     el = [torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(' ')])) for t in texts]
     el_padded = pad_sequence(el, batch_first=True)[:, :seq_len, :]

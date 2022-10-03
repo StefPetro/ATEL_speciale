@@ -21,7 +21,7 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=2GB]"
+#BSUB -R "rusage[mem=8GB]"
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 

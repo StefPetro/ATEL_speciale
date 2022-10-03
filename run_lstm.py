@@ -6,12 +6,13 @@ import torch
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 import fasttext
+import fasttext.util
 
 import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 25
+NUM_EPOCHS = 200
 set_seed(SEED)
 
 ## Load the data
@@ -21,24 +22,25 @@ book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 # https://fasttext.cc/docs/en/crawl-vectors.html
 print('Loading fastText model...')
 ft = fasttext.load_model('fasttext_model/cc.da.300.bin')  # Download from fastTexts website
+fasttext.util.reduce_model(ft, 100)
 print('Loading complete!')
 
 settings = {
     'multi_label': True,
-    'n_features': 300, 
-    "hidden_size": 256*8, 
-    "num_layers": 8,
+    'n_features': 100, 
+    "hidden_size": 512, 
+    "num_layers": 2,
 #    "num_l1": 256*4,
     "dropout": 0.2, 
     "batch_size": 64,
     "learning_rate" : 1e-5,
-    "output_size": 21
+    "output_size": 4
 }
 
 num_folds = 10
 results1 = []
 results2 = []
-target_col = 'Semantisk univers'
+target_col = 'Tekstbånd'
 
 for k in range(num_folds):
     print(f'STARTING CV K = {k+1}/{num_folds}')
