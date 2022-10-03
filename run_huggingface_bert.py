@@ -29,7 +29,7 @@ def compute_metrics_multiclass(eval_pred):
 
 def compute_metrics_multilabel(eval_pred):
     logits, labels = eval_pred
-    return {"accuracy": acc_metric(torch.tensor(logits), torch.tensor(labels))}
+    return {"accuracy": acc_metric(torch.tensor(logits), torch.tensor(labels).int())}
 
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
@@ -45,8 +45,8 @@ all_splits = [k for k in kf.split(token_dataset)]
 
 for k in range(NUM_SPLITS):
     train_idx, val_idx = all_splits[k]
-    train_dataset = token_dataset[train_idx]
-    val_dataset   = token_dataset[val_idx]
+    train_dataset = token_dataset.select(train_idx)
+    val_dataset   = token_dataset.select(val_idx)
 
     model = AutoModelForSequenceClassification.from_pretrained("Maltehb/danish-bert-botxo", 
                                                                num_labels=NUM_LABELS, 
@@ -54,12 +54,15 @@ for k in range(NUM_SPLITS):
     
     training_args = TrainingArguments(
         output_dir="test_trainer", 
-        save_strategy='no', 
+        save_strategy='no',
+        per_device_train_batch_size=4,
+        per_device_eval_batch_size=4,
+        gradient_accumulation_steps=4,
         evaluation_strategy='epoch',
         report_to='tensorboard',
         logging_dir='huggingface_logs',
-        logging_steps=5,  
-        num_train_epochs=5
+        logging_steps=5,
+        num_train_epochs=1
     )
 
     trainer = Trainer(
@@ -70,6 +73,6 @@ for k in range(NUM_SPLITS):
         compute_metrics=compute_metrics_multilabel,
     )
 
-    # trainer.train()
+    trainer.train()
     break
 

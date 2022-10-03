@@ -161,7 +161,7 @@ def get_pandas_dataframe(
     
     data = {
         'text': texts,
-        'labels': targets.tolist()
+        'labels': targets.astype(float).tolist()
     }
     
     return pd.DataFrame(data), labels
