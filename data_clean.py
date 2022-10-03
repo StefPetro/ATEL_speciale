@@ -147,3 +147,21 @@ def get_fasttext_embeddings(
 
     return book_ids, el_padded
 
+
+def get_pandas_dataframe(
+        book_col: atel.data.BookCollection, target_col: str
+    ) -> Tuple[pd.DataFrame, list]:
+    """ Create dataframe of data """
+    
+    book_ids, texts = clean_book_collection_texts(book_col, lowercase=False)
+    target_ids, targets, labels = get_labels(book_col, target_col)
+    
+    mask = np.isin(target_ids, book_ids)
+    targets = targets[mask]
+    
+    data = {
+        'text': texts,
+        'labels': targets.tolist()
+    }
+    
+    return pd.DataFrame(data), labels
