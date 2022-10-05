@@ -53,7 +53,7 @@ class MyCallback(TrainerCallback):
     "A callback that prints a message at the beginning of training"
 
     super().__init__()
-        self._trainer = trainer
+    self._trainer = trainer
     
     def on_epoch_end(self, args, state, control, **kwargs):
         if control.should_evaluate:
