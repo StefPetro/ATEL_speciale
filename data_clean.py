@@ -120,6 +120,34 @@ def get_labels(
         ex_book_df["Semantisk univers"] == "Vilde dyr\xa0", "Semantisk univers"
     ] = "Vilde dyr"
 
+    # TODO: Make this into yaml file
+    groupings = {
+        "Dyr og natur": [
+            "Kæledyr",
+            "Husdyr",
+            "Vilde dyr (danske)",
+            "Vilde dyr",
+            "Natur",
+        ],
+        "Det nære": ["Mig selv", "Venner", "Familie", "Legetøj og mine ting", "Skole"],
+        "Oplevelse": ["Oplevelse", "Højtider"],
+        "Menneskeliv": [
+            "Biler og andre køretøjer",
+            "Politi og militær",
+            "Teknologi",
+            "Mennesker",
+            "Monstre, guder og andre fantasivæsener",
+            "Sport",
+            "Mad",
+            "Bøger, film, musik, computerspil",
+        ],
+    }
+
+    for group in groupings:
+        ex_book_df["Semantisk univers"] = ex_book_df["Semantisk univers"].replace(
+            groupings[group], group
+        )
+
     col_df = ex_book_df[["book_id", target_col]].drop_duplicates()
 
     one_hot_df = pd.get_dummies(col_df, prefix=target_col).groupby("book_id").sum()
