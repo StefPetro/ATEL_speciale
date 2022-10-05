@@ -1,6 +1,6 @@
 import transformers
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import TrainingArguments, Trainer
+from transformers import TrainingArguments, Trainer, TrainerCallback
 from datasets import Dataset
 import evaluate
 from torchmetrics import Accuracy
@@ -8,6 +8,7 @@ from torchmetrics.classification import MultilabelAccuracy
 from sklearn.model_selection import KFold
 from data_clean import *
 from atel.data import BookCollection
+from copy import deepcopy
 
 SEED = 42
 NUM_SPLITS = 10
@@ -48,6 +49,19 @@ def compute_metrics_multilabel(eval_pred):
     return metrics
 
 
+class MyCallback(TrainerCallback):
+    "A callback that prints a message at the beginning of training"
+
+    super().__init__()
+        self._trainer = trainer
+    
+    def on_epoch_end(self, args, state, control, **kwargs):
+        if control.should_evaluate:
+            control_copy = deepcopy(control)
+            self._trainer.evaluate(eval_dataset=self._trainer.train_dataset, metric_key_prefix="train")
+            return control_copy
+
+
 dataset = Dataset.from_pandas(df)
 token_dataset = dataset.map(tokenize_function, batched=True)
 
@@ -84,6 +98,7 @@ for k in range(NUM_SPLITS):
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         compute_metrics=compute_metrics_multilabel,
+        callbacks=[MyCallback]
     )
 
     trainer.train()
