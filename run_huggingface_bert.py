@@ -11,6 +11,7 @@ from atel.data import BookCollection
 
 SEED = 42
 NUM_SPLITS = 10
+BATCH_SIZE = 16
 set_seed(SEED)
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
@@ -63,13 +64,15 @@ for k in range(NUM_SPLITS):
                                                                problem_type="multi_label_classification")
     
     training_args = TrainingArguments(
-        output_dir="test_trainer", 
+        output_dir="test_trainer",
+        seed=SEED,
         save_strategy='no',
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=4,
+        per_device_train_batch_size=BATCH_SIZE,
+        per_device_eval_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=4,
         evaluation_strategy='epoch',
         report_to='tensorboard',
+        run_name=f'BERT-CV_{k+1}-batch_size_{BATCH_SIZE}',
         logging_strategy='steps',
         logging_steps=1,
         logging_dir='huggingface_logs/runs',
