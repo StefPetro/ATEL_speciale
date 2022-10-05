@@ -52,8 +52,9 @@ def compute_metrics_multilabel(eval_pred):
 class MyCallback(TrainerCallback):
     "A callback that prints a message at the beginning of training"
 
-    super().__init__()
-    self._trainer = trainer
+    def __init__(self, trainer) -> None:
+        super().__init__()
+        self._trainer = trainer
     
     def on_epoch_end(self, args, state, control, **kwargs):
         if control.should_evaluate:
@@ -98,9 +99,9 @@ for k in range(NUM_SPLITS):
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         compute_metrics=compute_metrics_multilabel,
-        callbacks=[MyCallback]
     )
-
+    
+    trainer.add_callback(MyCallback(trainer))
     trainer.train()
     if k == 1:
         break
