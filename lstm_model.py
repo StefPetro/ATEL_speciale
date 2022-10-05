@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset, random_split, dataset
 from sklearn.model_selection import KFold
+from sklearn.metrics import accuracy_score
 
 import fasttext
 import pytorch_lightning as pl
@@ -94,7 +95,8 @@ class lstm_text(pl.LightningModule):
         x, y = train_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(self.logit_func(y_hat), y.int())
+        # acc = self.accuracy(torch.round(self.logit_func(y_hat)), y.int())
+        acc = accuracy_score(torch.round(self.logit_func(y_hat)).detach(), y.int())
 
         self.log("train_loss_step", loss)
         self.log("train_acc_step", acc)
@@ -104,7 +106,8 @@ class lstm_text(pl.LightningModule):
         x, y = val_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(self.logit_func(y_hat), y.int())
+        # acc = self.accuracy(self.logit_func(y_hat), y.int())
+        acc = accuracy_score(torch.round(self.logit_func(y_hat)).detach(), y.int())
 
         self.log("val_loss_step", loss)
         self.log("val_acc_step", acc)
@@ -148,6 +151,10 @@ class lstm_data(pl.LightningDataModule):
 
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
         y = torch.from_numpy(targets[mask]).float()
+
+        bin_index = labels.index("Dyr og natur")
+        y = y[:, bin_index]
+        y = torch.unsqueeze(y, 1)
 
         full_data = TensorDataset(X, y)
 
