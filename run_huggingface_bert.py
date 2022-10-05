@@ -72,10 +72,9 @@ for k in range(NUM_SPLITS):
         gradient_accumulation_steps=4,
         evaluation_strategy='epoch',
         report_to='tensorboard',
-        run_name=f'BERT-CV_{k+1}-batch_size_{BATCH_SIZE}',
         logging_strategy='steps',
         logging_steps=1,
-        logging_dir='huggingface_logs/runs',
+        logging_dir=f'huggingface_logs/runs/BERT-CV_{k+1}-batch_size_{BATCH_SIZE}',
         num_train_epochs=1
     )
 
