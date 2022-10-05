@@ -9,6 +9,7 @@ from sklearn.model_selection import KFold
 import fasttext
 import pytorch_lightning as pl
 import torchmetrics
+from torchmetrics.classification import BinaryAccuracy, MultilabelAccuracy
 from data_clean import *
 
 settings = {
@@ -55,6 +56,8 @@ class lstm_text(pl.LightningModule):
             print('Set to multi label classification')
             self.loss_func = nn.BCEWithLogitsLoss()
             self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
+            self.multilabel_acc = MultilabelAccuracy(num_labels=self.output_size)
+            self.multilabel_acc_sample = MultilabelAccuracy(num_labels=self.output_size, average=None)
             self.logit_func = nn.Sigmoid()
         else:
             print('Set to multi class classification')
@@ -81,9 +84,13 @@ class lstm_text(pl.LightningModule):
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
         acc = self.accuracy(self.logit_func(y_hat), y.int())
+        ml_acc = self.multilabel_acc(self.logit_func(y_hat), y.int())
+        ml_acc_sample = self.multilabel_acc_sample(self.logit_func(y_hat), y.int())
         
         self.log('train_loss_step', loss)
         self.log('train_acc_step', acc)
+        self.log('train_acc_step_ml', ml_acc)
+        self.log('train_acc_step_ml_sample', ml_acc_sample)
         return {'loss': loss, 'acc': acc}
     
     
@@ -92,9 +99,13 @@ class lstm_text(pl.LightningModule):
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
         acc = self.accuracy(self.logit_func(y_hat), y.int())
+        ml_acc = self.multilabel_acc(self.logit_func(y_hat), y.int())
+        ml_acc_sample = self.multilabel_acc_sample(self.logit_func(y_hat), y.int())
         
         self.log('val_loss_step', loss)
         self.log('val_acc_step', acc)
+        self.log('val_acc_step_ml', ml_acc)
+        self.log('val_acc_step_ml_sample', ml_acc_sample)
         return {'loss': loss, 'acc': acc}
 
     
