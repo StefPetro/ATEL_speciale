@@ -70,7 +70,7 @@ for k in range(NUM_SPLITS):
         gradient_accumulation_steps=4,
         evaluation_strategy='epoch',
         report_to='tensorboard',
-        logging_dir='huggingface_logs',
+        logging_dir='huggingface_logs/runs',
         logging_steps=5,
         num_train_epochs=1
     )
