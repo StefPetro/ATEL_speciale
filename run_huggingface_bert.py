@@ -87,5 +87,6 @@ for k in range(NUM_SPLITS):
     )
 
     trainer.train()
-    break
+    if k == 1:
+        break
 
