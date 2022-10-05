@@ -57,7 +57,7 @@ class lstm_text(pl.LightningModule):
             print('Set to multi label classification')
             self.loss_func = nn.BCEWithLogitsLoss()
             self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
-            self.multilabel_acc = MultilabelAccuracy(num_labels=self.output_size)
+            self.multilabel_acc = MultilabelAccuracy(num_labels=self.output_size, average='micro')
             self.logit_func = nn.Sigmoid()
         else:
             print('Set to multi class classification')
@@ -90,7 +90,7 @@ class lstm_text(pl.LightningModule):
         self.log('train_loss_step', loss)
         self.log('train_acc_step', acc)
         self.log('train_acc_step_ml', ml_acc)
-        self.log('train_acc_step_sk', accuracy_score(y.int().detach().numpy(), logits[logits >= 0.5].detach().numpy()))
+        self.log('train_acc_step_sk', accuracy_score(y.int().cpu().detach().numpy(), (logits > 0.5).float().cpu().detach().numpy()))
         return {'loss': loss, 'acc': acc}
     
     
@@ -105,7 +105,7 @@ class lstm_text(pl.LightningModule):
         self.log('val_loss_step', loss)
         self.log('val_acc_step', acc)
         self.log('val_acc_step_ml', ml_acc)
-        self.log('train_acc_step_sk', accuracy_score(y.int().detach().numpy(), logits[logits >= 0.5].detach().numpy()))
+        self.log('train_acc_step_sk', accuracy_score(y.int().cpu().detach().numpy(), (logits > 0.5).float().cpu().detach().numpy()))
         return {'loss': loss, 'acc': acc}
 
     
