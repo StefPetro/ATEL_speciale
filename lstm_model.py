@@ -65,7 +65,8 @@ class lstm_text(pl.LightningModule):
         if self.multi_label:  # if we are trying to solve a multi label problem
             print("Set to multi label classification")
             self.loss_func = nn.BCEWithLogitsLoss()
-            self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
+            # self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
+            self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
             self.logit_func = nn.Sigmoid()
         else:
             print("Set to multi class classification")
@@ -95,10 +96,7 @@ class lstm_text(pl.LightningModule):
         x, y = train_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        # acc = self.accuracy(self.logit_func(y_hat), y.int())
-
-        accuracy = torchmetrics.Accuracy(subset_accuracy=False)
-        acc = accuracy(self.logit_func(y_hat), y.int())
+        acc = self.accuracy(self.logit_func(y_hat), y.int())
 
         self.log("train_loss_step", loss)
         self.log("train_acc_step", acc)
@@ -108,10 +106,7 @@ class lstm_text(pl.LightningModule):
         x, y = val_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        # acc = self.accuracy(self.logit_func(y_hat), y.int())
-
-        accuracy = torchmetrics.Accuracy(subset_accuracy=False)
-        acc = accuracy(self.logit_func(y_hat), y.int())
+        acc = self.accuracy(self.logit_func(y_hat), y.int())
 
         self.log("val_loss_step", loss)
         self.log("val_acc_step", acc)
