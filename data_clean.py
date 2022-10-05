@@ -120,6 +120,34 @@ def get_labels(
         ex_book_df["Semantisk univers"] == "Vilde dyr\xa0", "Semantisk univers"
     ] = "Vilde dyr"
 
+    # TODO: Make this into yaml file
+    groupings = {
+        "Dyr og natur": [
+            "Kæledyr",
+            "Husdyr",
+            "Vilde dyr (danske)",
+            "Vilde dyr",
+            "Natur",
+        ],
+        "Det nære": ["Mig selv", "Venner", "Familie", "Legetøj og mine ting", "Skole"],
+        "Oplevelse": ["Oplevelse", "Højtider"],
+        "Menneskeliv": [
+            "Biler og andre køretøjer",
+            "Politi og militær",
+            "Teknologi",
+            "Mennesker",
+            "Monstre, guder og andre fantasivæsener",
+            "Sport",
+            "Mad",
+            "Bøger, film, musik, computerspil",
+        ],
+    }
+
+    for group in groupings:
+        ex_book_df["Semantisk univers"] = ex_book_df["Semantisk univers"].replace(
+            groupings[group], group
+        )
+
     col_df = ex_book_df[["book_id", target_col]].drop_duplicates()
 
     one_hot_df = pd.get_dummies(col_df, prefix=target_col).groupby("book_id").sum()
@@ -133,17 +161,16 @@ def get_labels(
 
 
 def get_fasttext_embeddings(
-        book_col: atel.data.BookCollection, 
-        ft: fasttext.FastText,
-        seq_len: int
-    
-    ) -> torch.Tensor:
+    book_col: atel.data.BookCollection, ft: fasttext.FastText, seq_len: int
+) -> torch.Tensor:
     book_ids, texts = clean_book_collection_texts(book_col, lowercase=False)
 
-    el = [torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(' ')])) for t in texts]
+    el = [
+        torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(" ")]))
+        for t in texts
+    ]
     el_padded = pad_sequence(el, batch_first=True)[:, :seq_len, :]
-    
-    assert el_padded.shape[1] == seq_len, 'Sequence length is not equal max length'
+
+    assert el_padded.shape[1] == seq_len, "Sequence length is not equal max length"
 
     return book_ids, el_padded
-
