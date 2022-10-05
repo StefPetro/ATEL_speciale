@@ -10,6 +10,7 @@ import fasttext
 import pytorch_lightning as pl
 import torchmetrics
 from torchmetrics.classification import MultilabelAccuracy
+from sklearn.metrics import accuracy_score
 from data_clean import *
 
 settings = {
@@ -84,10 +85,12 @@ class lstm_text(pl.LightningModule):
         loss = self.loss_func(y_hat, y)
         acc = self.accuracy(self.logit_func(y_hat), y.int())
         ml_acc = self.multilabel_acc(self.logit_func(y_hat), y.int())
-        
+    
+        logits = self.logit_func(y_hat)
         self.log('train_loss_step', loss)
         self.log('train_acc_step', acc)
         self.log('train_acc_step_ml', ml_acc)
+        self.log('train_acc_step_sk', accuracy_score(y.int().detach().numpy(), logits[logits >= 0.5].detach().numpy()))
         return {'loss': loss, 'acc': acc}
     
     
@@ -98,9 +101,11 @@ class lstm_text(pl.LightningModule):
         acc = self.accuracy(self.logit_func(y_hat), y.int())
         ml_acc = self.multilabel_acc(self.logit_func(y_hat), y.int())
         
+        logits = self.logit_func(y_hat)
         self.log('val_loss_step', loss)
         self.log('val_acc_step', acc)
         self.log('val_acc_step_ml', ml_acc)
+        self.log('train_acc_step_sk', accuracy_score(y.int().detach().numpy(), logits[logits >= 0.5].detach().numpy()))
         return {'loss': loss, 'acc': acc}
 
     
