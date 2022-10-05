@@ -9,7 +9,7 @@ from sklearn.model_selection import KFold
 import fasttext
 import pytorch_lightning as pl
 import torchmetrics
-from torchmetrics.classification import BinaryAccuracy, MultilabelAccuracy
+from torchmetrics.classification import MultilabelAccuracy
 from data_clean import *
 
 settings = {
