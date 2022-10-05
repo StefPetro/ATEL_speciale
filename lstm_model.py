@@ -95,8 +95,10 @@ class lstm_text(pl.LightningModule):
         x, y = train_batch
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
-        # acc = self.accuracy(torch.round(self.logit_func(y_hat)), y.int())
-        acc = accuracy_score(torch.round(self.logit_func(y_hat)).detach(), y.int())
+        # acc = self.accuracy(self.logit_func(y_hat), y.int())
+
+        accuracy = torchmetrics.Accuracy(subset_accuracy=False)
+        acc = accuracy(self.logit_func(y_hat), y.int())
 
         self.log("train_loss_step", loss)
         self.log("train_acc_step", acc)
@@ -107,7 +109,9 @@ class lstm_text(pl.LightningModule):
         y_hat = self(x)
         loss = self.loss_func(y_hat, y)
         # acc = self.accuracy(self.logit_func(y_hat), y.int())
-        acc = accuracy_score(torch.round(self.logit_func(y_hat)).detach(), y.int())
+
+        accuracy = torchmetrics.Accuracy(subset_accuracy=False)
+        acc = accuracy(self.logit_func(y_hat), y.int())
 
         self.log("val_loss_step", loss)
         self.log("val_acc_step", acc)
