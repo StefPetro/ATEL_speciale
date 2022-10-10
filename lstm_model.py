@@ -37,9 +37,6 @@ class lstm_text(pl.LightningModule):
         self.batch_size    = kwargs.get("batch_size",    32)
         self.learning_rate = kwargs.get('learning_rate', 1e-4)
         self.output_size   = kwargs.get('output_size',   1)
-        self.pos_w         = kwargs.get('pos_w', torch.ones(self.output_size))
-
-        print(self.pos_w)
         
         self.save_hyperparameters()
         
@@ -58,7 +55,7 @@ class lstm_text(pl.LightningModule):
         
         if self.multi_label:  # if we are trying to solve a multi label problem
             print('Set to multi label classification')
-            self.loss_func = nn.BCEWithLogitsLoss(pos_weight=self.pos_w)
+            self.loss_func = nn.BCEWithLogitsLoss()
             self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
             self.multilabel_acc = MultilabelAccuracy(num_labels=self.output_size, average='micro')
             self.logit_func = nn.Sigmoid()
@@ -151,8 +148,6 @@ class lstm_data(pl.LightningDataModule):
 
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
         y = torch.from_numpy(targets[mask]).float()
-        
-        self.pos_w = 1-(y.sum(axis=0)/y.sum())
         
         full_data = TensorDataset(X, y)
         
