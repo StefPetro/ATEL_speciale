@@ -152,7 +152,7 @@ class lstm_data(pl.LightningDataModule):
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
         y = torch.from_numpy(targets[mask]).float()
         
-        self.pos_w = (y.sum()-y.sum(axis=0))/y.sum(axis=0)
+        self.pos_w = 1-(y.sum(axis=0)/y.sum())
         
         full_data = TensorDataset(X, y)
         
