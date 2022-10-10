@@ -39,6 +39,8 @@ class lstm_text(pl.LightningModule):
         self.output_size   = kwargs.get('output_size',   1)
         self.pos_w         = kwargs.get('pos_w', torch.ones(self.output_size))
 
+        print(self.pos_w)
+        
         self.save_hyperparameters()
         
         self.lstm = nn.LSTM(input_size    = self.n_features,
