@@ -49,20 +49,6 @@ def compute_metrics_multilabel(eval_pred):
     return metrics
 
 
-class MyCallback(TrainerCallback):
-    "A callback that prints a message at the beginning of training"
-
-    def __init__(self, trainer) -> None:
-        super().__init__()
-        self._trainer = trainer
-    
-    def on_epoch_end(self, args, state, control, **kwargs):
-        if control.should_evaluate:
-            control_copy = deepcopy(control)
-            self._trainer.evaluate(eval_dataset=self._trainer.train_dataset, metric_key_prefix="train")
-            return control_copy
-
-
 dataset = Dataset.from_pandas(df)
 token_dataset = dataset.map(tokenize_function, batched=True)
 
@@ -99,9 +85,9 @@ for k in range(NUM_SPLITS):
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         compute_metrics=compute_metrics_multilabel,
+        tokenizer=tokenizer
     )
     
-    trainer.add_callback(MyCallback(trainer))
     trainer.train()
     if k == 1:
         break
