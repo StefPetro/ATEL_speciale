@@ -14,10 +14,11 @@ SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
 NUM_EPOCHS = 20
+TARGET     = 'Genre'
 set_seed(SEED)
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
-df, labels = get_pandas_dataframe(book_col, 'Semantisk univers')
+df, labels = get_pandas_dataframe(book_col, TARGET)
 
 NUM_LABELS = len(labels)
 
@@ -76,7 +77,7 @@ for k in range(NUM_SPLITS):
         report_to='tensorboard',
         logging_strategy='steps',
         logging_steps=1,
-        logging_dir=f'huggingface_logs/runs/BERT-CV_{k+1}-batch_size_{BATCH_SIZE}-epochs_{NUM_EPOCHS}',
+        logging_dir=f'huggingface_logs/runs/BERT-{TARGET}-CV_{k+1}-batch_size_{BATCH_SIZE}-epochs_{NUM_EPOCHS}',
         num_train_epochs=NUM_EPOCHS
     )
 
