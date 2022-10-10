@@ -76,7 +76,7 @@ for k in range(NUM_SPLITS):
         logging_strategy='steps',
         logging_steps=1,
         logging_dir=f'huggingface_logs/runs/BERT-CV_{k+1}-batch_size_{BATCH_SIZE}',
-        num_train_epochs=1
+        num_train_epochs=5
     )
 
     trainer = Trainer(
