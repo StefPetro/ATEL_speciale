@@ -44,7 +44,6 @@ target_col = 'Semantisk univers'
 for k in range(num_folds):
     print(f'STARTING CV K = {k+1}/{num_folds}')
     
-    model = lstm_text(**settings)
     data = lstm_data(
         book_col=book_col, 
         target_col=target_col, 
@@ -54,6 +53,10 @@ for k in range(num_folds):
         seed=SEED,
         k=k
     )
+    data.prepare_data()
+    data.setup()
+    settings['pos_w'] = data.pos_w
+    model = lstm_text(**settings)
     logger_name = f'{target_col.replace(" ", "_")}-cv{k}-max_epoch_{NUM_EPOCHS}-num_lstm_layers_{settings["num_layers"]}'
     logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=logger_name)
     
