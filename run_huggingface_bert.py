@@ -9,6 +9,8 @@ from sklearn.model_selection import KFold
 from data_clean import *
 from atel.data import BookCollection
 from copy import deepcopy
+import yaml
+from yaml import CLoader
 
 SEED = 42
 NUM_SPLITS = 10
@@ -17,15 +19,24 @@ NUM_EPOCHS = 20
 TARGET     = 'Genre'
 set_seed(SEED)
 
+with open('target_problem_type.yaml', 'r', encoding='utf-8') as f:
+    target_problems = yaml.load(f, Loader=CLoader)
+
+
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
+
+for target, problem_type in target_problems.items():
+    pass
+
 df, labels = get_pandas_dataframe(book_col, TARGET)
 
 NUM_LABELS = len(labels)
 
+label2id = dict(zip(labels, range(NUM_LABELS)))
+id2label = dict(zip(range(NUM_LABELS)), labels)
+
 metric = evaluate.load("accuracy")
 acc_metric = Accuracy(subset_accuracy=True)
-multilabel_acc = MultilabelAccuracy(num_labels=NUM_LABELS)
-multilabel_acc_sample = MultilabelAccuracy(num_labels=NUM_LABELS, average=None)
 
 tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
 
@@ -44,8 +55,6 @@ def compute_metrics_multilabel(eval_pred):
     
     metrics = {
         "accuracy": acc_metric(torch.tensor(logits), torch.tensor(labels).int()),
-        "ml_acc": multilabel_acc(torch.tensor(logits), torch.tensor(labels).int()),
-        "sample_acc": multilabel_acc_sample(torch.tensor(logits), torch.tensor(labels).int())
     }
     
     return metrics
@@ -64,7 +73,9 @@ for k in range(NUM_SPLITS):
 
     model = AutoModelForSequenceClassification.from_pretrained("Maltehb/danish-bert-botxo", 
                                                                num_labels=NUM_LABELS, 
-                                                               problem_type="multi_label_classification")
+                                                               problem_type="multi_label_classification",
+                                                               label2id=label2id,
+                                                               id2label=id2label)
     
     training_args = TrainingArguments(
         output_dir="test_trainer",
