@@ -33,7 +33,7 @@ settings = {
     "dropout": 0.2,
     "batch_size": 64,
     "learning_rate" : 1e-5,
-    "output_size": 21
+    "output_size": 5
 }
 
 num_folds = 10
