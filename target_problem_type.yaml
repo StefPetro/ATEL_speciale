@@ -1,0 +1,7 @@
+Genre: multilabel
+Tekstbånd: multilabel
+Fremstillingsform: multilabel
+Semantisk univers: multilabel
+Stemmer: multilabel
+Perspektiv: multiclass
+Holistisk vurdering: multiclass
