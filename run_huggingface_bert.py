@@ -37,13 +37,14 @@ for TARGET, problem_type in target_problems.items():
     if problem_type == 'multilabel':
         multilabel = True
         p_t = "multi_label_classification"
+        acc_metric = Accuracy(subset_accuracy=True)
         
     else:
         multilabel = False
         p_t = "single_label_classification"
+        acc_metric = Accuracy(subset_accuracy=True)
     
-    
-    acc_metric = Accuracy(subset_accuracy=True)
+   
     
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
