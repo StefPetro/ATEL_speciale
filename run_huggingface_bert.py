@@ -1,8 +1,6 @@
-import transformers
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer, TrainerCallback
 from datasets import Dataset
-import evaluate
 from torchmetrics import Accuracy
 from torchmetrics.classification import MultilabelAccuracy, MulticlassAccuracy
 from sklearn.model_selection import KFold
@@ -34,33 +32,33 @@ for TARGET, problem_type in target_problems.items():
     print(f'STARTED TRAINING FOR: {TARGET}')
     print(f'PROBLEM TYPE: {problem_type}')
     
-    if problem_type == 'multilabel':
-        multilabel = True
-        p_t = "multi_label_classification"
-        acc_metric = Accuracy(subset_accuracy=True)
-        
-    else:
-        multilabel = False
-        p_t = "single_label_classification"
-        acc_metric = Accuracy(subset_accuracy=True)
-    
-   
-    
-    def compute_metrics(eval_pred):
-        logits, labels = eval_pred
-        
-        metrics = {
-            "accuracy": acc_metric(torch.tensor(logits), torch.tensor(labels).int()),
-        }
-        
-        return metrics
-    
     df, labels = get_pandas_dataframe(book_col, TARGET)
 
     NUM_LABELS = len(labels)
 
     label2id = dict(zip(labels, range(NUM_LABELS)))
     id2label = dict(zip(range(NUM_LABELS)), labels)
+    
+    if problem_type == 'multilabel':
+        multilabel = True
+        p_t = "multi_label_classification"
+        logit_func = torch.nn.Sigmoid()
+        acc_metric = Accuracy(subset_accuracy=True)
+        
+    else:
+        multilabel = False
+        p_t = "single_label_classification"
+        logit_func = torch.nn.Softmax()
+        acc_metric = MulticlassAccuracy(num_classes=NUM_LABELS)
+    
+    
+    def compute_metrics(eval_pred):
+        logits, labels = eval_pred
+        metrics = {
+            "accuracy": acc_metric(logit_func(torch.tensor(logits)), torch.tensor(labels).int()),
+        }
+        return metrics
+    
 
     dataset = Dataset.from_pandas(df)
     token_dataset = dataset.map(tokenize_function, batched=True)
@@ -77,10 +75,10 @@ for TARGET, problem_type in target_problems.items():
         val_dataset   = token_dataset.select(val_idx)
 
         model = AutoModelForSequenceClassification.from_pretrained("Maltehb/danish-bert-botxo", 
-                                                                num_labels=NUM_LABELS, 
-                                                                problem_type=p_t,
-                                                                label2id=label2id,
-                                                                id2label=id2label)
+                                                                   num_labels=NUM_LABELS, 
+                                                                   problem_type=p_t,
+                                                                   label2id=label2id,
+                                                                   id2label=id2label)
         
         training_args = TrainingArguments(
             output_dir="test_trainer",
