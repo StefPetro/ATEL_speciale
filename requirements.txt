@@ -9,4 +9,4 @@ pytorch_lightning==1.7.7
 scikit_learn
 torch==1.12.1
 torchmetrics
-
+transformers
