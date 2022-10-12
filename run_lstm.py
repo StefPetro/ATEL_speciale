@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 200
+NUM_EPOCHS = 3000
 set_seed(SEED)
 
 ## Load the data
@@ -29,18 +29,18 @@ settings = {
     'multi_label': True,
     'n_features': 100, 
     "hidden_size": 512, 
-    "num_layers": 2,
+    "num_layers": 4,
 #    "num_l1": 256*4,
     "dropout": 0.2, 
-    "batch_size": 64,
-    "learning_rate" : 1e-5,
-    "output_size": 4
+    "batch_size": 128,
+    "learning_rate" : 1e-3,
+    "output_size": 1
 }
 
 num_folds = 10
 results1 = []
 results2 = []
-target_col = 'Tekstbånd'
+target_col = 'Semantisk univers'
 
 for k in range(num_folds):
     print(f'STARTING CV K = {k+1}/{num_folds}')
@@ -56,7 +56,7 @@ for k in range(num_folds):
         k=k
     )
     logger_name = f'{target_col.replace(" ", "_")}-cv{k}-max_epoch_{NUM_EPOCHS}'
-    logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=logger_name)
+    logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs/single_class', name=logger_name)
     
     trainer = Trainer(
         max_epochs = NUM_EPOCHS,

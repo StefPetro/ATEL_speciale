@@ -17,13 +17,13 @@ config = RobertaConfig(
     type_vocab_size=1,
 )
 
-tokenizer = RobertaTokenizer.from_pretrained("/BPETtokenizer_121022", max_length=512)
+tokenizer = RobertaTokenizer.from_pretrained("./BPEtokenizer_121022", max_length=512)
 
 model = RobertaForMaskedLM(config=config).cuda()
 
 dataset = LineByLineTextDataset(
     tokenizer=tokenizer,
-    file_path="../data/Gyldendal_child_books/gyldendalbooks.txt",
+    file_path="./data/Gyldendal_child_books/gyldendalbooks.txt",
     block_size=128,
 )
 
@@ -32,7 +32,7 @@ data_collator = DataCollatorForLanguageModeling(
 )
 
 training_args = TrainingArguments(
-    output_dir="/MiniBERTa_121022",
+    output_dir="./MiniBERTa_121022",
     overwrite_output_dir=True,
     num_train_epochs=3,
     per_device_train_batch_size=64,
@@ -48,4 +48,4 @@ trainer = Trainer(
 )
 trainer.train()
 
-trainer.save_model("/MiniBERTa_121022")
+trainer.save_model("./MiniBERTa_121022")
