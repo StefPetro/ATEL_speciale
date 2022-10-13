@@ -12,9 +12,8 @@ from yaml import CLoader
 
 SEED = 42
 NUM_SPLITS = 10
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 NUM_EPOCHS = 20
-set_seed(SEED)
 
 with open('target_problem_type.yaml', 'r', encoding='utf-8') as f:
     target_problems = yaml.load(f, Loader=CLoader)
@@ -31,6 +30,8 @@ for TARGET, problem_type in target_problems.items():
     
     print(f'STARTED TRAINING FOR: {TARGET}')
     print(f'PROBLEM TYPE: {problem_type}')
+    
+    set_seed(SEED)
     
     df, labels = get_pandas_dataframe(book_col, TARGET)
 
@@ -86,7 +87,7 @@ for TARGET, problem_type in target_problems.items():
             save_strategy='no',
             per_device_train_batch_size=BATCH_SIZE,
             per_device_eval_batch_size=BATCH_SIZE,
-            gradient_accumulation_steps=4,
+            gradient_accumulation_steps=1,
             evaluation_strategy='epoch',
             report_to='tensorboard',
             logging_strategy='steps',
@@ -105,6 +106,6 @@ for TARGET, problem_type in target_problems.items():
         )
         
         trainer.train()
-        if k == 1:
+        if k == 0:
             break
 
