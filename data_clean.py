@@ -172,9 +172,14 @@ def get_pandas_dataframe(
     mask = np.isin(target_ids, book_ids)
     targets = targets[mask]
     
+    if len(targets.shape) > 1:  # if targets are multilabel, make sure they are float
+        targets = targets.astype(float)
+    else:  # else it is single label, and needs to be int
+        targets = targets.astype(int)
+    
     data = {
         'text': texts,
-        'labels': targets.astype(float).tolist()
+        'labels': targets.tolist()
     }
     
     return pd.DataFrame(data), labels
