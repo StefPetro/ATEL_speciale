@@ -37,7 +37,7 @@ for TARGET, problem_type in target_problems.items():
     NUM_LABELS = len(labels)
 
     label2id = dict(zip(labels, range(NUM_LABELS)))
-    id2label = dict(zip(range(NUM_LABELS)), labels)
+    id2label = dict(zip(range(NUM_LABELS), labels))
     
     if problem_type == 'multilabel':
         multilabel = True
