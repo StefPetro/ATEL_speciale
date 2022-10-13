@@ -4,7 +4,7 @@
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
-#BSUB -J run_bert
+#BSUB -J run_bert_tekstbaand
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 12
 ### -- specify that the cores must be on the same host -- 
