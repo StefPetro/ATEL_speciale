@@ -12,12 +12,16 @@ from transformers import (
 config = RobertaConfig(
     vocab_size=5_000,
     max_position_embeddings=514,
-    num_attention_heads=6,
-    num_hidden_layers=6,
+    hidden_size=256,
+    intermediate_size=1024,
+    num_attention_heads=8,
+    num_hidden_layers=8,
     type_vocab_size=1,
 )
 
-tokenizer = RobertaTokenizer.from_pretrained("./BPEtokenizer_121022", max_length=512)
+tokenizer = RobertaTokenizer.from_pretrained(
+    "./tokenizers/BPEtokenizer_121022", max_length=512
+)
 
 model = RobertaForMaskedLM(config=config).cuda()
 
@@ -32,9 +36,9 @@ data_collator = DataCollatorForLanguageModeling(
 )
 
 training_args = TrainingArguments(
-    output_dir="./MiniBERTa_121022",
+    output_dir="./models/BabyBERTa_131022",
     overwrite_output_dir=True,
-    num_train_epochs=3,
+    num_train_epochs=10,
     per_device_train_batch_size=64,
     save_steps=10_000,
     save_total_limit=2,
@@ -48,4 +52,4 @@ trainer = Trainer(
 )
 trainer.train()
 
-trainer.save_model("./MiniBERTa_121022")
+trainer.save_model("./models/BabyBERTa_131022")

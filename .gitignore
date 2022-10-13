@@ -3,6 +3,7 @@ data/..
 fasttext_model/
 lightning_logs/checkpoints
 checkpoints/
+models/
 *.err
 *.out
 
