@@ -31,8 +31,20 @@ def random_multiclass(targets):
     return p[n]
 
 
-for target_col, problem_type in target_problems.items():
+def multiclass2(targets, num_repeats: int = 10_000):
+    unique, counts = np.unique(targets, return_counts=True)
+    random_guess = np.random.binomial(1, counts[1]/counts.sum(), (num_repeats, len(targets)))
     
+    pred_check = []
+    for g in random_guess:
+        t = np.sum(g == targets)/len(targets)
+        pred_check.append(t)
+    
+    avg = np.mean(pred_check)
+    return avg
+
+
+for target_col, problem_type in target_problems.items():
     target_ids, targets, labels = get_labels(book_col, target_col)
         
     mask = np.isin(target_ids, book_ids)
