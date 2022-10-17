@@ -30,6 +30,8 @@ settings = {
     'n_features': 100, 
     "hidden_size": 128,
     "num_layers": 4,
+    'l1_size': 512,
+    'l2_size': 256,
     "dropout": 0.2,
     "batch_size": 64,
     "learning_rate" : 1e-5,
