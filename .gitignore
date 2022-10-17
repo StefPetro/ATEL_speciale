@@ -5,6 +5,7 @@ lightning_logs/checkpoints
 checkpoints/
 *.err
 *.out
+batch_out_files
 test_trainer/
 
 # Byte-compiled / optimized / DLL files
