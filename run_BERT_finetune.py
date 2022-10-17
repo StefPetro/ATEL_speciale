@@ -22,7 +22,7 @@ TARGET = args.target_col
 
 SEED = 42
 NUM_SPLITS = 10
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 NUM_EPOCHS = 50
 set_seed(SEED)
 
@@ -99,7 +99,7 @@ for k in range(NUM_SPLITS):
         save_strategy='no',
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
-        gradient_accumulation_steps=2,
+        gradient_accumulation_steps=4,
         evaluation_strategy='epoch',
         report_to='tensorboard',
         logging_strategy='steps',
