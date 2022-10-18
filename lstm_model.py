@@ -65,8 +65,8 @@ class lstm_text(pl.LightningModule):
         if self.multi_label:  # if we are trying to solve a multi label problem
             print("Set to multi label classification")
             self.loss_func = nn.BCEWithLogitsLoss()
-            # self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
-            self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
+            self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
+            # self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
             self.logit_func = nn.Sigmoid()
         else:
             print("Set to multi class classification")
@@ -151,9 +151,9 @@ class lstm_data(pl.LightningDataModule):
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
         y = torch.from_numpy(targets[mask]).float()
 
-        bin_index = labels.index("Det nære")
-        y = y[:, bin_index]
-        y = torch.unsqueeze(y, 1)
+        # bin_index = labels.index("Menneskeliv")
+        # y = y[:, bin_index]
+        # y = torch.unsqueeze(y, 1)
 
         full_data = TensorDataset(X, y)
 
