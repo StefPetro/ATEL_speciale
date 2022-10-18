@@ -9,10 +9,11 @@ import fasttext
 import fasttext.util
 
 import warnings
+
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 10000
+NUM_EPOCHS = 1
 set_seed(SEED)
 
 ## Load the data
@@ -20,60 +21,62 @@ book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
 ## Load fastText model
 # https://fasttext.cc/docs/en/crawl-vectors.html
-print('Loading fastText model...')
-ft = fasttext.load_model('fasttext_model/cc.da.300.bin')  # Download from fastTexts website
+print("Loading fastText model...")
+ft = fasttext.load_model(
+    "fasttext_model/cc.da.300.bin"
+)  # Download from fastTexts website
 fasttext.util.reduce_model(ft, 100)
-print('Loading complete!')
+print("Loading complete!")
 
 settings = {
-    'multi_label': True,
-    'n_features': 100, 
-    "hidden_size": 512, 
+    "multi_label": True,
+    "n_features": 100,
+    "hidden_size": 512,
     "num_layers": 8,
-#    "num_l1": 256*4,
-    "dropout": 0.2, 
+    "num_l1": 256,
+    "dropout": 0.2,
     "batch_size": 128,
-    "learning_rate" : 1e-5,
-    "output_size": 5
+    "learning_rate": 1e-5,
+    "output_size": 5,
 }
 
 num_folds = 10
 results1 = []
 results2 = []
-target_col = 'Semantisk univers'
+target_col = "Semantisk univers"
 
 for k in range(num_folds):
-    print(f'STARTING CV K = {k+1}/{num_folds}')
-    
+    print(f"STARTING CV K = {k+1}/{num_folds}")
+
     model = lstm_text(**settings)
     data = lstm_data(
-        book_col=book_col, 
-        target_col=target_col, 
-        ft=ft, 
-        batch_size=settings['batch_size'], 
+        book_col=book_col,
+        target_col=target_col,
+        ft=ft,
+        batch_size=settings["batch_size"],
         seq_len=128,
         seed=SEED,
-        k=k
+        k=k,
     )
     logger_name = f'{target_col.replace(" ", "_")}-cv{k}-max_epoch_{NUM_EPOCHS}'
-    logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs/', name=logger_name)
-    
+    logger = pl.loggers.TensorBoardLogger(save_dir="lightning_logs/", name=logger_name)
+
     trainer = Trainer(
-        max_epochs = NUM_EPOCHS,
-        gpus = 1 if torch.cuda.is_available() else 0,
-        log_every_n_steps = 1,
-        enable_checkpointing = False,
-        logger = logger
+        max_epochs=NUM_EPOCHS,
+        gpus=1 if torch.cuda.is_available() else 0,
+        log_every_n_steps=1,
+        enable_checkpointing=False,
+        logger=logger,
     )
     trainer.fit(model, data)
-    
+
     val_scores = trainer.validate(model, data)[0]
-    score1 = val_scores['avg_val_acc']
+    score1 = val_scores["avg_val_acc"]
     results1.append(score1)
-    
-    score2 = val_scores['val_acc_step']
+
+    score2 = val_scores["val_acc_step"]
     results2.append(score2)
-    print('Done!')
+    print("Done!")
     break
 
 print(np.mean(results1), np.mean(results2))

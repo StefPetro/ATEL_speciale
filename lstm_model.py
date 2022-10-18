@@ -49,18 +49,18 @@ class lstm_text(pl.LightningModule):
             batch_first=True,
         )
 
-        # self.l1 = nn.Linear(
-        #     in_features=self.hidden_size * 2,  # times 2 if lstm is bidirectional
-        #     out_features=self.num_l1,
-        # )
-
-        # self.out_layer = nn.Linear(
-        #     in_features=self.num_l1, out_features=self.output_size
-        # )
+        self.l1 = nn.Linear(
+            in_features=self.hidden_size * 2,  # times 2 if lstm is bidirectional
+            out_features=self.num_l1,
+        )
 
         self.out_layer = nn.Linear(
-            in_features=self.hidden_size * 2, out_features=self.output_size
+            in_features=self.num_l1, out_features=self.output_size
         )
+
+        # self.out_layer = nn.Linear(
+        #     in_features=self.hidden_size * 2, out_features=self.output_size
+        # )
 
         if self.multi_label:  # if we are trying to solve a multi label problem
             print("Set to multi label classification")
@@ -84,12 +84,12 @@ class lstm_text(pl.LightningModule):
         # lstm input: (N, L, H_in) = (batch_size, seq_len, embedding_size)
         lstm_out, (h_n, c_n) = self.lstm(x)
         # out = F.gelu(lstm_out[:, -1])
-        # out = self.l1(out)
+        out = self.l1(lstm_out[:, -1])
         # out = F.gelu(out)
         # out = self.dropout(out)
-        # out = self.out_layer(out)
+        out = self.out_layer(out)
 
-        out = self.out_layer(lstm_out[:, -1])
+        # out = self.out_layer(lstm_out[:, -1])
         return out
 
     def training_step(self, train_batch, batch_idx):
