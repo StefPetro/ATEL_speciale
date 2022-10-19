@@ -128,7 +128,7 @@ class lstm_text(pl.LightningModule):
         loss = self.loss_func(preds, y)
         
         self.log('val_step_loss', loss)
-        self.log(self.compute_metrics(preds, y, self.logit_func, self.multilabel, 'val'))
+        self.log(self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'val'))
         return loss
 
     
