@@ -79,7 +79,7 @@ class lstm_text(pl.LightningModule):
         if multi_label:
             preds = logit_func(preds)
             acc_micro = accuracy(preds, targets, subset_accuracy=True)
-            acc_macro = multilabel_accuracy(preds, targets)
+            acc_macro = multilabel_accuracy(preds, targets, num_labels=targets.shape[1])
             
             metrics = {
                 f'{current}_step_acc_micro': acc_micro,
