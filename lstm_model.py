@@ -122,7 +122,7 @@ class lstm_text(pl.LightningModule):
         metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'train')
         self.log('train_step_loss', loss)
         self.log_dict(metrics)
-        return loss
+        return {'loss': loss}
     
     
     def validation_step(self, val_batch, batch_idx):
@@ -134,7 +134,7 @@ class lstm_text(pl.LightningModule):
         metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'val')
         self.log('val_step_loss', loss)
         self.log_dict(metrics)
-        return loss
+        return {'loss': loss}
 
     
     def validation_epoch_end(self, outputs) -> None:
