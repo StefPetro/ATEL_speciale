@@ -74,7 +74,7 @@ class lstm_text(pl.LightningModule):
             self.logit_func = nn.Softmax()
             
     
-    def compute_metrics(preds, targets, logit_func, multi_label, current):
+    def compute_metrics(self, preds, targets, logit_func, multi_label, current):
         """ Function that compute relevant metrics to log """
         if multi_label:
             preds = logit_func(preds)
@@ -126,6 +126,7 @@ class lstm_text(pl.LightningModule):
         x, y = val_batch
         preds = self(x)
         loss = self.loss_func(preds, y)
+        
         
         metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'val')
         self.log('val_step_loss', loss)
