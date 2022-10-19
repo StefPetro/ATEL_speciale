@@ -74,7 +74,7 @@ class lstm_text(pl.LightningModule):
             self.logit_func = nn.Softmax()
             
     
-    def compute_metrics(preds, targets, logit_func, multi_label, current='train'):
+    def compute_metrics(preds, targets, logit_func, multi_label, current):
         """ Function that compute relevant metrics to log """
         if multi_label:
             preds = logit_func(preds)
@@ -94,7 +94,6 @@ class lstm_text(pl.LightningModule):
         return metrics
                 
             
-    
     def configure_optimizers(self):
         optim = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=1e-3)
         return optim
@@ -117,8 +116,7 @@ class lstm_text(pl.LightningModule):
         preds = self(x)
         loss = self.loss_func(preds, y)
 
-        metrics = self.compute_metrics(preds=preds, targets=y, logit_func=self.logit_func, 
-                                       multi_label=self.multi_label, current='train')
+        metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'train')
         self.log('train_step_loss', loss)
         self.log(metrics)
         return loss
@@ -129,8 +127,7 @@ class lstm_text(pl.LightningModule):
         preds = self(x)
         loss = self.loss_func(preds, y)
         
-        metrics = self.compute_metrics(preds=preds, targets=y, logit_func=self.logit_func, 
-                                       multi_label=self.multi_label, current='val')
+        metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'val')
         self.log('val_step_loss', loss)
         self.log(metrics)
         return loss
