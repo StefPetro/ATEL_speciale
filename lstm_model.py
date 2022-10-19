@@ -76,6 +76,9 @@ class lstm_text(pl.LightningModule):
     
     def compute_metrics(self, preds, targets, logit_func, multi_label, current):
         """ Function that compute relevant metrics to log """
+        
+        targets = targets.int()  # makes sure target is integers
+        
         if multi_label:
             preds = logit_func(preds)
             acc_micro = accuracy(preds, targets, subset_accuracy=True)
