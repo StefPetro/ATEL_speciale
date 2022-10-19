@@ -68,13 +68,5 @@ for k in range(num_folds):
     )
     trainer.fit(model, data)
     
-    val_scores = trainer.validate(model, data)[0]
-    score1 = val_scores['avg_val_acc']
-    results1.append(score1)
-    
-    score2 = val_scores['val_acc_step']
-    results2.append(score2)
     print('Done!')
     break
-
-print(np.mean(results1), np.mean(results2))
