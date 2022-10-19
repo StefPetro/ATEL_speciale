@@ -28,7 +28,7 @@ print('Loading complete!')
 settings = {
     'multi_label': True,
     'n_features': 100, 
-    "hidden_size": 128,
+    "hidden_size": 512,
     "num_layers": 4,
     'l1_size': 512,
     'l2_size': 256,
