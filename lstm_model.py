@@ -141,8 +141,8 @@ class lstm_text(pl.LightningModule):
         loss = torch.stack([out['loss'] for out in outputs]).mean()
         self.log("avg_val_loss", loss)
 
-        acc = torch.stack([out['acc'] for out in outputs]).mean()
-        self.log("avg_val_acc", acc)
+        # acc = torch.stack([out['acc'] for out in outputs]).mean()
+        # self.log("avg_val_acc", acc)
 
 
 class lstm_data(pl.LightningDataModule):
