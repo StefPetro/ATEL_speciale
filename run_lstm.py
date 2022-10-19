@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 SEED = 42
-NUM_EPOCHS = 100
+NUM_EPOCHS = 5000
 set_seed(SEED)
 
 ## Load the data
