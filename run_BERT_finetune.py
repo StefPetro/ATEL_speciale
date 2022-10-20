@@ -2,10 +2,12 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer, TrainerCallback
 from transformers import AdamW, get_linear_schedule_with_warmup
 from datasets import Dataset
-from torchmetrics import Accuracy
-from torchmetrics.classification import MultilabelAccuracy, MulticlassAccuracy
-from torchmetrics.functional import accuracy
-from torchmetrics.functional.classification import multilabel_accuracy
+from torchmetrics.functional.classification import multilabel_exact_match
+from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
+from torchmetrics.functional.classification import multilabel_recall, multilabel_precision
+from torchmetrics.functional.classification import multiclass_accuracy, multiclass_f1_score
+from torchmetrics.functional.classification import multiclass_recall, multiclass_precision
+from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
 from sklearn.model_selection import KFold
 from data_clean import *
 from atel.data import BookCollection
@@ -13,7 +15,7 @@ import argparse
 import yaml
 from yaml import CLoader
 
-parser = argparse.ArgumentParser(description='')
+parser = argparse.ArgumentParser(description='Arguments for running the BERT finetuning')
 parser.add_argument(
     '--target_col',
     help='The target column to train the BERT model on.', 
@@ -32,10 +34,10 @@ LEARNING_RATE = 2e-5
 WEIGHT_DECAY  = 0.01
 set_seed(SEED)
 
-with open('target_problem_type.yaml', 'r', encoding='utf-8') as f:
-    target_problems = yaml.load(f, Loader=CLoader)
+with open('target_info.yaml', 'r', encoding='utf-8') as f:
+    target_info = yaml.load(f, Loader=CLoader)
 
-assert TARGET in target_problems.keys()  # checks if targets is part of the actual problem columns
+assert TARGET in target_info.keys()  # checks if targets is part of the actual problem columns
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
@@ -45,15 +47,13 @@ def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
 
 
-problem_type = target_problems[TARGET]
-
+problem_type = target_info[TARGET]['problem_type']
+NUM_LABELS   = target_info[TARGET]['num_labels']
   
 print(f'STARTED TRAINING FOR: {TARGET}')
 print(f'PROBLEM TYPE: {problem_type}')
 
 df, labels = get_pandas_dataframe(book_col, TARGET)
-
-NUM_LABELS = len(labels)
 
 label2id = dict(zip(labels, range(NUM_LABELS)))
 id2label = dict(zip(range(NUM_LABELS), labels))
@@ -76,18 +76,47 @@ def compute_metrics(eval_pred):
     
     if problem_type == 'multilabel':
         preds = logit_func(preds)
-        acc_micro = accuracy(preds, labels, subset_accuracy=True)
+        acc_exact = multilabel_exact_match(preds, labels, num_labels=NUM_LABELS)
         acc_macro = multilabel_accuracy(preds, labels, num_labels=NUM_LABELS)
         
+        # How are they calculated?:
+        # The metrics are calculated for each label. 
+        # So if there is 4 labels, then 4 recalls are calculated.
+        # These 4 values are then averaged, which is the end score that is logged.
+        # The default average applied is 'macro' 
+        precision_macro = multilabel_precision(preds, labels, num_labels=NUM_LABELS)
+        recall_macro = multilabel_recall(preds, labels, num_labels=NUM_LABELS)
+        f1_macro = multilabel_f1_score(preds, labels, num_labels=NUM_LABELS)
+        
+        # AUROC score of 1 is a perfect score
+        # AUROC score of 0.5 corresponds to random guessing.
+        auroc_macro = multilabel_auroc(preds, labels, num_labels=NUM_LABELS, average="macro", thresholds=None)
+        
         metrics = {
-            f'accuracy_micro': acc_micro,
-            f'accuracy_macro': acc_macro
+            'accuracy_exact':  acc_exact,
+            'accuracy_macro':  acc_macro,
+            'precision_macro': precision_macro,
+            'recall_macro':    recall_macro,
+            'f1_macro':        f1_macro,
+            'AUROC_macro':     auroc_macro
         }
     else:
         preds = logit_func(preds)
-        acc = accuracy(preds, labels)
+        acc_micro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='micro')
+        acc_macro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='macro')
+        precision_macro = multiclass_precision(preds, labels, num_labels=NUM_LABELS)
+        recall_macro = multiclass_recall(preds, labels, num_labels=NUM_LABELS)
+        f1_macro = multiclass_f1_score(preds, labels, num_labels=NUM_LABELS)
+        auroc_macro = multiclass_auroc(preds, labels, num_labels=NUM_LABELS, average="macro", thresholds=None)
         
-        metrics = {f'accuracy': acc}
+        metrics = {
+            'accuracy_micro':  acc_micro,
+            'accuracy_macro':  acc_macro,
+            'precision_macro': precision_macro,
+            'recall_macro':    recall_macro,
+            'f1_macro':        f1_macro,
+            'AUROC_macro':     auroc_macro
+        }
         
     return metrics
     
