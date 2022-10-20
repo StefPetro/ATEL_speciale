@@ -148,7 +148,7 @@ class lstm_text(pl.LightningModule):
 class lstm_data(pl.LightningDataModule):
     def __init__(
             self,
-            book_col,
+            book_col: atel.data.BookCollection,
             target_col: str,
             ft: fasttext.FastText,
             seq_len: int = 256,
