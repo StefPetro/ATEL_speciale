@@ -163,7 +163,8 @@ for k in range(NUM_SPLITS):
                     +f'-Learning_rate_{LEARNING_RATE}'\
                     +f'/{TARGET}-CV_{k+1}',
         report_to='tensorboard',
-        evaluation_strategy='epoch',
+        evaluation_strategy='steps',
+        eval_steps=1,
         seed=SEED,
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
