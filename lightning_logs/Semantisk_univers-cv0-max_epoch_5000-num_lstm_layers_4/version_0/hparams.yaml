@@ -1,6 +1,6 @@
 batch_size: 64
 dropout: 0.2
-hidden_size: 128
+hidden_size: 512
 l1_size: 512
 l2_size: 256
 learning_rate: 1.0e-05
