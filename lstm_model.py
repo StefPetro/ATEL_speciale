@@ -5,13 +5,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset, random_split, dataset
 from sklearn.model_selection import KFold
-
 import fasttext
 import pytorch_lightning as pl
-import torchmetrics
 from torchmetrics.classification import MultilabelAccuracy
-from torchmetrics.functional import accuracy
-from torchmetrics.functional.classification import multilabel_accuracy
+from torchmetrics.functional.classification import multilabel_exact_match
+from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
+from torchmetrics.functional.classification import multilabel_recall, multilabel_precision
+from torchmetrics.functional.classification import multiclass_accuracy, multiclass_f1_score
+from torchmetrics.functional.classification import multiclass_recall, multiclass_precision
+from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
 from data_clean import *
 
 
@@ -77,22 +79,43 @@ class lstm_text(pl.LightningModule):
     def compute_metrics(self, preds, targets, logit_func, multi_label, current):
         """ Function that compute relevant metrics to log """
         
+        preds = logit_func(preds)
         targets = targets.int()  # makes sure target is integers
+        NUM_LABELS = targets.shape[1]
         
-        if multi_label:
-            preds = logit_func(preds)
-            acc_micro = accuracy(preds, targets, subset_accuracy=True)
-            acc_macro = multilabel_accuracy(preds, targets, num_labels=targets.shape[1])
+        if multi_label:            
+            acc_exact = multilabel_exact_match(preds, targets, num_labels=NUM_LABELS)
+            acc_macro = multilabel_accuracy(preds, targets, num_labels=NUM_LABELS) 
+            precision_macro = multilabel_precision(preds, targets, num_labels=NUM_LABELS)
+            recall_macro = multilabel_recall(preds, targets, num_labels=NUM_LABELS)
+            f1_macro = multilabel_f1_score(preds, targets, num_labels=NUM_LABELS)
+            auroc_macro = multilabel_auroc(preds, targets, num_labels=NUM_LABELS, average="macro", thresholds=None)
             
             metrics = {
-                f'{current}_step_acc_micro': acc_micro,
-                f'{current}_step_acc_macro': acc_macro
+                f'{current}_step_acc_exact':       acc_exact,
+                f'{current}_step_acc_macro':       acc_macro,
+                f'{current}_step_precision_macro': precision_macro,
+                f'{current}_step_recall_macro':    recall_macro,
+                f'{current}_step_f1_macro':        f1_macro,
+                f'{current}_step_AUROC_macro':     auroc_macro
             }
+
         else:
-            preds = logit_func(preds)
-            acc = accuracy(preds, targets)
+            acc_micro = multiclass_accuracy(preds, targets, num_classes=NUM_LABELS, average='micro')
+            acc_macro = multiclass_accuracy(preds, targets, num_classes=NUM_LABELS, average='macro')
+            precision_macro = multiclass_precision(preds, targets, num_labels=NUM_LABELS)
+            recall_macro = multiclass_recall(preds, targets, num_labels=NUM_LABELS)
+            f1_macro = multiclass_f1_score(preds, targets, num_labels=NUM_LABELS)
+            auroc_macro = multiclass_auroc(preds, targets, num_labels=NUM_LABELS, average="macro", thresholds=None)
             
-            metrics = {f'{current}_acc_step': acc}
+            metrics = {
+                f'{current}_step_acc_micro':       acc_micro,
+                f'{current}_step_acc_macro':       acc_macro,
+                f'{current}_step_precision_macro': precision_macro,
+                f'{current}_step_recall_macro':    recall_macro,
+                f'{current}_step_f1_macro':        f1_macro,
+                f'{current}_step_AUROC_macro':     auroc_macro
+            }
             
         return metrics
                 
