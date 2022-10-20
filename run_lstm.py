@@ -32,17 +32,17 @@ settings = {
     "multi_label": True,
     "n_features": 100,
     "hidden_size": 512,
-    "num_layers": 8,
+    "num_layers": 4,
     "dropout": 0.2,
     "batch_size": 128,
     "learning_rate": 1e-5,
-    "output_size": 5,
+    "output_size": 3,
 }
 
 num_folds = 10
 results1 = []
 results2 = []
-target_col = "Semantisk univers"
+target_col = "Stemmer"
 
 for k in range(num_folds):
     print(f"STARTING CV K = {k+1}/{num_folds}")

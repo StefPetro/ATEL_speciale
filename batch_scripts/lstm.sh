@@ -15,7 +15,7 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
-#BSUB -J lstm
+#BSUB -J lstm_10000_lr5
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 12
 ### -- specify that the cores must be on the same host -- 
@@ -34,8 +34,8 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o batch_out/lstm.out
-#BSUB -e batch_out/lstm.err
+#BSUB -o batch_out/lstm_10000_lr5.out
+#BSUB -e batch_out/lstm_10000_lr5.err
 
 # here follow the commands you want to execute 
 python3 run_lstm.py
