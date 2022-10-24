@@ -23,8 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o ./out_files/LSTM_Holistisk_vurdering.out
-#BSUB -e ./out_files/LSTM_Holistisk_vurdering.err
+#BSUB -o ./out_files/LSTM/LSTM_Holistisk_vurdering.out
+#BSUB -e ./out_files/LSTM/LSTM_Holistisk_vurdering.err
 
 # here follow the commands you want to execute 
 
