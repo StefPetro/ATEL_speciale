@@ -75,7 +75,8 @@ data = lstm_data(
     batch_size=settings['batch_size'], 
     seq_len=171,
     seed=SEED,
-    k=CV
+    k=CV,
+    problem_type=problem_type
 )
 model = lstm_text(**settings)
 logger_name = f'{TARGET.replace(" ", "_")}/'\

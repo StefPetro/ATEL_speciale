@@ -153,7 +153,6 @@ class lstm_text(pl.LightningModule):
         preds = self(x)
         loss = self.loss_func(preds, y)
         
-        
         metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'val')
         self.log('val_step_loss', loss)
         self.log_dict(metrics)
@@ -179,6 +178,7 @@ class lstm_data(pl.LightningDataModule):
             k: int = 0,
             seed: int = 42,
             num_splits: int = 10,
+            problem_type: str = 'multilabel'
         ):
         super().__init__()
         
@@ -190,7 +190,7 @@ class lstm_data(pl.LightningDataModule):
         self.seq_len        = seq_len
         self.seed           = seed
         self.num_splits     = num_splits
-    
+        self.problem_type   = problem_type
     
     def setup(self, stage: Optional[str] = None):
         
@@ -198,7 +198,10 @@ class lstm_data(pl.LightningDataModule):
         target_ids, targets, labels = get_labels(self.book_col, self.target_col)
 
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
-        y = torch.from_numpy(targets[mask]).float()
+        if self.problem_type == 'multilabel':
+            y = torch.from_numpy(targets[mask]).float()
+        elif self.problem_type == 'multiclass':
+            y = torch.from_numpy(targets[mask]).int()
         
         full_data = TensorDataset(X, y)
         
