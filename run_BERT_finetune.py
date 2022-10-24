@@ -75,7 +75,6 @@ def compute_metrics(eval_pred):
     labels = torch.tensor(labels).int()
     
     if problem_type == 'multilabel':
-        preds = logit_func(preds)
         acc_exact = multilabel_exact_match(preds, labels, num_labels=NUM_LABELS)
         acc_macro = multilabel_accuracy(preds, labels, num_labels=NUM_LABELS)
         
@@ -101,7 +100,6 @@ def compute_metrics(eval_pred):
             'AUROC_macro':     auroc_macro
         }
     else:
-        preds = logit_func(preds)
         acc_micro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='micro')
         acc_macro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='macro')
         precision_macro = multiclass_precision(preds, labels, num_labels=NUM_LABELS)
