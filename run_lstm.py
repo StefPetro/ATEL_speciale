@@ -78,7 +78,7 @@ data = lstm_data(
     k=CV
 )
 model = lstm_text(**settings)
-logger_name = f'{TARGET.replace(" ", "_")}'\
+logger_name = f'{TARGET.replace(" ", "_")}/'\
                 +f'num_epoch_{NUM_EPOCHS}'\
                 +f'-embedding_size_{EMBEDDING_SIZE}'\
                 +f'-lstm_layers_{settings["num_layers"]}'\
