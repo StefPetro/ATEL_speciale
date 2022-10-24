@@ -155,13 +155,13 @@ for k in range(NUM_SPLITS):
         logging_steps=1,
         logging_dir=f'huggingface_logs'\
                     +f'/{TARGET}'\
-                    +f'/BERT-batch_size_{BATCH_SIZE}'\
-                    +f'-batch_accum_{BATCH_ACCUMALATION}'\
-                    +f'-epochs_{NUM_EPOCHS}'\
-                    +f'-seed_{SEED}'\
-                    +f'-Weight_decay_{WEIGHT_DECAY}'\
-                    +f'-Learning_rate_{LEARNING_RATE}'\
-                    +f'/{TARGET}-CV_{k+1}',
+                    +f'/BERT-BS{BATCH_SIZE}'\
+                    +f'-BA{BATCH_ACCUMALATION}'\
+                    +f'-ep{NUM_EPOCHS}'\
+                    +f'-seed{SEED}'\
+                    +f'-WD{WEIGHT_DECAY}'\
+                    +f'-LR{LEARNING_RATE}'\
+                    +f'/CV_{k+1}',
         report_to='tensorboard',
         evaluation_strategy='steps',
         eval_steps=1,
