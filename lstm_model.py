@@ -103,10 +103,10 @@ class lstm_text(pl.LightningModule):
         else:
             acc_micro = multiclass_accuracy(preds, targets, num_classes=NUM_LABELS, average='micro')
             acc_macro = multiclass_accuracy(preds, targets, num_classes=NUM_LABELS, average='macro')
-            precision_macro = multiclass_precision(preds, targets, num_labels=NUM_LABELS)
-            recall_macro = multiclass_recall(preds, targets, num_labels=NUM_LABELS)
-            f1_macro = multiclass_f1_score(preds, targets, num_labels=NUM_LABELS)
-            auroc_macro = multiclass_auroc(preds, targets, num_labels=NUM_LABELS, average="macro", thresholds=None)
+            precision_macro = multiclass_precision(preds, targets, num_classes=NUM_LABELS)
+            recall_macro = multiclass_recall(preds, targets, num_classes=NUM_LABELS)
+            f1_macro = multiclass_f1_score(preds, targets, num_classes=NUM_LABELS)
+            auroc_macro = multiclass_auroc(preds, targets, num_classes=NUM_LABELS, average="macro", thresholds=None)
             
             metrics = {
                 f'{current}_step_acc_micro':       acc_micro,
