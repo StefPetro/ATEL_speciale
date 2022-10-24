@@ -102,10 +102,10 @@ def compute_metrics(eval_pred):
     else:
         acc_micro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='micro')
         acc_macro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='macro')
-        precision_macro = multiclass_precision(preds, labels, num_labels=NUM_LABELS)
-        recall_macro = multiclass_recall(preds, labels, num_labels=NUM_LABELS)
-        f1_macro = multiclass_f1_score(preds, labels, num_labels=NUM_LABELS)
-        auroc_macro = multiclass_auroc(preds, labels, num_labels=NUM_LABELS, average="macro", thresholds=None)
+        precision_macro = multiclass_precision(preds, labels, num_classes=NUM_LABELS)
+        recall_macro = multiclass_recall(preds, labels, num_classes=NUM_LABELS)
+        f1_macro = multiclass_f1_score(preds, labels, num_classes=NUM_LABELS)
+        auroc_macro = multiclass_auroc(preds, labels, num_classes=NUM_LABELS, average="macro", thresholds=None)
         
         metrics = {
             'accuracy_micro':  acc_micro,
