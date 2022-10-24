@@ -84,7 +84,7 @@ logger_name = f'{TARGET.replace(" ", "_")}/'\
                 +f'-lstm_layers_{settings["num_layers"]}'\
                 +f'-lstm_size_{settings["hidden_size"]}'\
                 +f'-l1_size_{settings["l1_size"]}'\
-                +f'-l2_size_{settings["l2_size"]}'\
+                +f'-l2_size_{settings["l2_size"]}/'\
                 +f'CV_{CV+1}'
 logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=logger_name)
 
