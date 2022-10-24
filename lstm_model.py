@@ -201,7 +201,7 @@ class lstm_data(pl.LightningDataModule):
         if self.problem_type == 'multilabel':
             y = torch.from_numpy(targets[mask]).float()
         elif self.problem_type == 'multiclass':
-            y = torch.from_numpy(targets[mask]).int()
+            y = torch.from_numpy(targets[mask]).long()
         
         full_data = TensorDataset(X, y)
         
