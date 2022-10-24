@@ -4,7 +4,7 @@
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
-#BSUB -J run_model
+#BSUB -J LSTM_Fremstillingsform
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 4
 ### -- specify that the cores must be on the same host -- 
@@ -23,8 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o lstm_tester.out
-#BSUB -e lstm_tester.err
+#BSUB -o ./out_files/LSTM_Fremstillingsform.out
+#BSUB -e ./out_files/LSTM_Fremstillingsform.err
 
 # here follow the commands you want to execute 
 

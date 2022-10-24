@@ -23,8 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o ./batch_out_files/BERT_Semantisk_univers.out
-#BSUB -e ./batch_out_files/BERT_Semantisk_univers.err
+#BSUB -o ./out_files/BERT_Semantisk_univers.out
+#BSUB -e ./out_files/BERT_Semantisk_univers.err
 
 # here follow the commands you want to execute 
 
