@@ -81,15 +81,14 @@ class lstm_text(pl.LightningModule):
         
         preds = logit_func(preds)
         targets = targets.int()  # makes sure target is integers
-        NUM_LABELS = targets.shape[1]
         
-        if multi_label:            
-            acc_exact = multilabel_exact_match(preds, targets, num_labels=NUM_LABELS)
-            acc_macro = multilabel_accuracy(preds, targets, num_labels=NUM_LABELS) 
-            precision_macro = multilabel_precision(preds, targets, num_labels=NUM_LABELS)
-            recall_macro = multilabel_recall(preds, targets, num_labels=NUM_LABELS)
-            f1_macro = multilabel_f1_score(preds, targets, num_labels=NUM_LABELS)
-            auroc_macro = multilabel_auroc(preds, targets, num_labels=NUM_LABELS, average="macro", thresholds=None)
+        if multi_label:
+            acc_exact = multilabel_exact_match(preds, targets, num_labels=self.output_size)
+            acc_macro = multilabel_accuracy(preds, targets, num_labels=self.output_size) 
+            precision_macro = multilabel_precision(preds, targets, num_labels=self.output_size)
+            recall_macro = multilabel_recall(preds, targets, num_labels=self.output_size)
+            f1_macro = multilabel_f1_score(preds, targets, num_labels=self.output_size)
+            auroc_macro = multilabel_auroc(preds, targets, num_labels=self.output_size, average="macro", thresholds=None)
             
             metrics = {
                 f'{current}_step_acc_exact':       acc_exact,
@@ -101,12 +100,12 @@ class lstm_text(pl.LightningModule):
             }
 
         else:
-            acc_micro = multiclass_accuracy(preds, targets, num_classes=NUM_LABELS, average='micro')
-            acc_macro = multiclass_accuracy(preds, targets, num_classes=NUM_LABELS, average='macro')
-            precision_macro = multiclass_precision(preds, targets, num_classes=NUM_LABELS)
-            recall_macro = multiclass_recall(preds, targets, num_classes=NUM_LABELS)
-            f1_macro = multiclass_f1_score(preds, targets, num_classes=NUM_LABELS)
-            auroc_macro = multiclass_auroc(preds, targets, num_classes=NUM_LABELS, average="macro", thresholds=None)
+            acc_micro = multiclass_accuracy(preds, targets, num_classes=self.output_size, average='micro')
+            acc_macro = multiclass_accuracy(preds, targets, num_classes=self.output_size, average='macro')
+            precision_macro = multiclass_precision(preds, targets, num_classes=self.output_size)
+            recall_macro = multiclass_recall(preds, targets, num_classes=self.output_size)
+            f1_macro = multiclass_f1_score(preds, targets, num_classes=self.output_size)
+            auroc_macro = multiclass_auroc(preds, targets, num_classes=self.output_size, average="macro", thresholds=None)
             
             metrics = {
                 f'{current}_step_acc_micro':       acc_micro,
