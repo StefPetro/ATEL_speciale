@@ -92,7 +92,7 @@ logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=logger_nam
 trainer = Trainer(
     max_epochs = NUM_EPOCHS,
     gpus = 1 if torch.cuda.is_available() else 0,
-    log_every_n_steps = 1,
+    log_every_n_steps = 3,
     enable_checkpointing = False,
     logger = logger
 )
