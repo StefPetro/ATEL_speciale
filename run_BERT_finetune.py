@@ -83,8 +83,8 @@ def compute_metrics(eval_pred):
         # So if there is 4 labels, then 4 recalls are calculated.
         # These 4 values are then averaged, which is the end score that is logged.
         # The default average applied is 'macro' 
-        precision_macro = multilabel_precision(preds, labels, num_labels=NUM_LABELS)
-        recall_macro = multilabel_recall(preds, labels, num_labels=NUM_LABELS)
+        # precision_macro = multilabel_precision(preds, labels, num_labels=NUM_LABELS)
+        # recall_macro = multilabel_recall(preds, labels, num_labels=NUM_LABELS)
         f1_macro = multilabel_f1_score(preds, labels, num_labels=NUM_LABELS)
         
         # AUROC score of 1 is a perfect score
@@ -94,24 +94,24 @@ def compute_metrics(eval_pred):
         metrics = {
             'accuracy_exact':  acc_exact,
             'accuracy_macro':  acc_macro,
-            'precision_macro': precision_macro,
-            'recall_macro':    recall_macro,
+            # 'precision_macro': precision_macro,
+            # 'recall_macro':    recall_macro,
             'f1_macro':        f1_macro,
             'AUROC_macro':     auroc_macro
         }
     else:
         acc_micro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='micro')
         acc_macro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='macro')
-        precision_macro = multiclass_precision(preds, labels, num_classes=NUM_LABELS)
-        recall_macro = multiclass_recall(preds, labels, num_classes=NUM_LABELS)
+        # precision_macro = multiclass_precision(preds, labels, num_classes=NUM_LABELS)
+        # recall_macro = multiclass_recall(preds, labels, num_classes=NUM_LABELS)
         f1_macro = multiclass_f1_score(preds, labels, num_classes=NUM_LABELS)
         auroc_macro = multiclass_auroc(preds, labels, num_classes=NUM_LABELS, average="macro", thresholds=None)
         
         metrics = {
             'accuracy_micro':  acc_micro,
             'accuracy_macro':  acc_macro,
-            'precision_macro': precision_macro,
-            'recall_macro':    recall_macro,
+            # 'precision_macro': precision_macro,
+            # 'recall_macro':    recall_macro,
             'f1_macro':        f1_macro,
             'AUROC_macro':     auroc_macro
         }
@@ -149,8 +149,8 @@ for k in range(NUM_SPLITS):
     training_args = TrainingArguments(
         output_dir="test_trainer",
         save_strategy='no',
-        logging_strategy='steps',
-        logging_steps=1,
+        logging_strategy='epoch',
+        # logging_steps=1,
         logging_dir=f'huggingface_logs'\
                     +f'/{TARGET}'\
                     +f'/BERT-BS{BATCH_SIZE}'\
@@ -161,8 +161,8 @@ for k in range(NUM_SPLITS):
                     +f'-LR{LEARNING_RATE}'\
                     +f'/CV_{k+1}',
         report_to='tensorboard',
-        evaluation_strategy='steps',
-        eval_steps=1,
+        evaluation_strategy='epoch',
+        # eval_steps=1,
         seed=SEED,
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
