@@ -4,7 +4,7 @@
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
-#BSUB -J run_bert_stemmer
+#BSUB -J run_bert_Stemmer
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 4
 ### -- specify that the cores must be on the same host -- 
