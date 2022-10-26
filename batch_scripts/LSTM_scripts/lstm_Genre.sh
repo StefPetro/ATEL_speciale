@@ -6,7 +6,7 @@
 ### -- set the job Name -- 
 #BSUB -J LSTM_Genre
 ### -- ask for number of cores (default: 1) -- 
-#BSUB -n 4
+#BSUB -n 8
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
@@ -23,8 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o ./out_files/LSTM/LSTM_Genre.out
-#BSUB -e ./out_files/LSTM/LSTM_Genre.err
+#BSUB -oo ./out_files/LSTM/LSTM_Genre.out
+#BSUB -eo ./out_files/LSTM/LSTM_Genre.err
 
 # here follow the commands you want to execute 
 
