@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 parser = argparse.ArgumentParser(description="Arguments for training the LSTM model")
 parser.add_argument(
-    "--target_col", help="The target column to train the BERT model on.", default=None
+    "--target_col", help="The target column to train the LSTM model on.", default=None
 )
 parser.add_argument(
     "--cv", help="Which cross-validation fold to use. Can be 1-10", default=1, type=int
