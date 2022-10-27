@@ -14,6 +14,7 @@ from atel.data import BookCollection
 import argparse
 import yaml
 from yaml import CLoader
+import os
 
 parser = argparse.ArgumentParser(description='Arguments for running the BERT finetuning')
 parser.add_argument(
@@ -154,7 +155,7 @@ for k in range(NUM_SPLITS):
                    +f'-seed{SEED}'\
                    +f'-WD{WEIGHT_DECAY}'\
                    +f'-LR{LEARNING_RATE}'\
-                   +f'/CV_{k+1}',
+                   +f'/CV_{k+1}'
     
     training_args = TrainingArguments(
         output_dir=f'huggingface_saves/{TARGET}',
@@ -188,9 +189,13 @@ for k in range(NUM_SPLITS):
     trainer.train()
 
     print(trainer.evaluate())
-    outputs = trainer.model(input_ids=val_dataset['input_ids'], labels=val_dataset['labels'])
+    outputs = trainer.model(input_ids=torch.tensor(val_dataset['input_ids']), 
+                            labels=torch.tensor(val_dataset['labels']))
     
     
     if k == 0:
         break
-    
+
+## Removes the saved checkpoints, as they take too much space
+for f in os.listdir(f'huggingface_saves/{TARGET}'):
+    os.remove(os.path.join(f'huggingface_saves/{TARGET}', f))
