@@ -164,7 +164,7 @@ class lstm_text(pl.LightningModule):
         all_preds = torch.stack([out['preds'] for out in outputs])
         y         = torch.stack([out['target'] for out in outputs])
         
-        loss = self.loss_func(all_preds).mean()
+        loss = self.loss_func(all_preds, y).mean()
         self.log("val_epoch_loss", loss)
         
         metrics = self.compute_metrics(all_preds, y, self.logit_func, self.multi_label, 'val_epoch')
