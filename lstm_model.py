@@ -161,9 +161,9 @@ class lstm_text(pl.LightningModule):
 
     
     def validation_epoch_end(self, outputs) -> None:
-        all_preds = torch.stack([out['preds'] for out in outputs])
-        y         = torch.stack([out['target'] for out in outputs])
-        
+        all_preds = torch.cat([out['preds'] for out in outputs])
+        y         = torch.cat([out['target'] for out in outputs])
+                
         loss = self.loss_func(all_preds, y).mean()
         self.log("val_epoch_loss", loss)
         
