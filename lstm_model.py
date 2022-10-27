@@ -58,6 +58,8 @@ class lstm_text(pl.LightningModule):
         #     in_features=self.num_l1, out_features=self.output_size
         # )
 
+        self.dropout = nn.Dropout(p=0.2)
+
         self.out_layer = nn.Linear(
             in_features=self.hidden_size * 2, out_features=self.output_size
         )
@@ -86,10 +88,10 @@ class lstm_text(pl.LightningModule):
         # out = F.gelu(lstm_out[:, -1])
         # out = self.l1(out)
         # out = F.gelu(out)
-        # out = self.dropout(out)
+        out = self.dropout(lstm_out[:, -1])
         # out = self.out_layer(out)
 
-        out = self.out_layer(lstm_out[:, -1])
+        out = self.out_layer(out)
         return out
 
     def training_step(self, train_batch, batch_idx):
@@ -150,10 +152,6 @@ class lstm_data(pl.LightningDataModule):
 
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
         y = torch.from_numpy(targets[mask]).float()
-
-        # bin_index = labels.index("Menneskeliv")
-        # y = y[:, bin_index]
-        # y = torch.unsqueeze(y, 1)
 
         full_data = TensorDataset(X, y)
 
