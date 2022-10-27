@@ -23,8 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o ./out_files/BERT/BERT_Genre.out
-#BSUB -e ./out_files/BERT/BERT_Genre.err
+#BSUB -oo ./out_files/BERT/BERT_Genre.out
+#BSUB -eo ./out_files/BERT/BERT_Genre.err
 
 # here follow the commands you want to execute 
 

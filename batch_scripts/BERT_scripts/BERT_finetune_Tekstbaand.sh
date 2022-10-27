@@ -10,7 +10,7 @@
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=8GB]"
+#BSUB -R "rusage[mem=4GB]"
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 
@@ -23,8 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o ./out_files/BERT/BERT_Tekstbaand.out
-#BSUB -e ./out_files/BERT/BERT_Tekstbaand.err
+#BSUB -oo ./out_files/BERT/BERT_Tekstbaand.out
+#BSUB -eo ./out_files/BERT/BERT_Tekstbaand.err
 
 # here follow the commands you want to execute 
 
