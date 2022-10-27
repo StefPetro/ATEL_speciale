@@ -6,6 +6,24 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset, random_split, dataset
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
+from torchmetrics.functional.classification import multilabel_exact_match
+from torchmetrics.functional.classification import (
+    multilabel_accuracy,
+    multilabel_f1_score,
+)
+from torchmetrics.functional.classification import (
+    multilabel_recall,
+    multilabel_precision,
+)
+from torchmetrics.functional.classification import (
+    multiclass_accuracy,
+    multiclass_f1_score,
+)
+from torchmetrics.functional.classification import (
+    multiclass_recall,
+    multiclass_precision,
+)
+from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
 
 import fasttext
 import pytorch_lightning as pl
@@ -40,6 +58,11 @@ class lstm_text(pl.LightningModule):
 
         self.save_hyperparameters()
 
+        self.best_model_logits = None
+        self.best_f1 = 0
+        self.best_epoch = 0
+        self.epoch = 0
+
         self.lstm = nn.LSTM(
             input_size=self.n_features,
             hidden_size=self.hidden_size,
@@ -67,14 +90,71 @@ class lstm_text(pl.LightningModule):
         if self.multi_label:  # if we are trying to solve a multi label problem
             print("Set to multi label classification")
             self.loss_func = nn.BCEWithLogitsLoss()
-            self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
-            # self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
             self.logit_func = nn.Sigmoid()
+
         else:
             print("Set to multi class classification")
             self.loss_func = nn.CrossEntropyLoss()
-            self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
             self.logit_func = nn.Softmax()
+
+    def compute_metrics(self, preds, targets, logit_func, multi_label, current):
+        """Function that compute relevant metrics to log"""
+
+        preds = logit_func(preds)
+
+        if multi_label:
+            acc_exact = multilabel_exact_match(
+                preds, targets, num_labels=self.output_size
+            )
+            acc_macro = multilabel_accuracy(preds, targets, num_labels=self.output_size)
+            # precision_macro = multilabel_precision(preds, targets, num_labels=self.output_size)
+            # recall_macro = multilabel_recall(preds, targets, num_labels=self.output_size)
+            f1_macro = multilabel_f1_score(preds, targets, num_labels=self.output_size)
+            auroc_macro = multilabel_auroc(
+                preds,
+                targets,
+                num_labels=self.output_size,
+                average="macro",
+                thresholds=None,
+            )
+
+            metrics = {
+                f"{current}_acc_exact": acc_exact,
+                f"{current}_acc_macro": acc_macro,
+                # f'{current}_step_precision_macro': precision_macro,
+                # f'{current}_step_recall_macro':    recall_macro,
+                f"{current}_f1_macro": f1_macro,
+                f"{current}_AUROC_macro": auroc_macro,
+            }
+
+        else:
+            acc_micro = multiclass_accuracy(
+                preds, targets, num_classes=self.output_size, average="micro"
+            )
+            acc_macro = multiclass_accuracy(
+                preds, targets, num_classes=self.output_size, average="macro"
+            )
+            # precision_macro = multiclass_precision(preds, targets, num_classes=self.output_size)
+            # recall_macro = multiclass_recall(preds, targets, num_classes=self.output_size)
+            f1_macro = multiclass_f1_score(preds, targets, num_classes=self.output_size)
+            auroc_macro = multiclass_auroc(
+                preds,
+                targets,
+                num_classes=self.output_size,
+                average="macro",
+                thresholds=None,
+            )
+
+            metrics = {
+                f"{current}_acc_micro": acc_micro,
+                f"{current}_acc_macro": acc_macro,
+                # f'{current}_step_precision_macro': precision_macro,
+                # f'{current}_step_recall_macro':    recall_macro,
+                f"{current}_f1_macro": f1_macro,
+                f"{current}_AUROC_macro": auroc_macro,
+            }
+
+        return metrics
 
     def configure_optimizers(self):
         optim = torch.optim.AdamW(
@@ -96,30 +176,42 @@ class lstm_text(pl.LightningModule):
 
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
-        y_hat = self(x)
-        loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(self.logit_func(y_hat), y.int())
+        preds = self(x)
+        loss = self.loss_func(preds, y)
 
-        self.log("train_loss_step", loss)
-        self.log("train_acc_step", acc)
-        return {"loss": loss, "acc": acc}
+        # metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'train_step')
+        self.log("train_step_loss", loss)
+        # self.log_dict(metrics)
+        return {"loss": loss}
 
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
-        y_hat = self(x)
-        loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(self.logit_func(y_hat), y.int())
+        preds = self(x)
+        loss = self.loss_func(preds, y)
 
-        self.log("val_loss_step", loss)
-        self.log("val_acc_step", acc)
-        return {"loss": loss, "acc": acc}
+        self.log("val_step_loss", loss)
+        return {"preds": preds, "target": y}
 
     def validation_epoch_end(self, outputs) -> None:
-        loss = torch.stack([out["loss"] for out in outputs]).mean()
-        self.log("avg_val_loss", loss)
+        all_preds = torch.cat([out["preds"] for out in outputs])
+        y = torch.cat([out["target"] for out in outputs])
 
-        acc = torch.stack([out["acc"] for out in outputs]).mean()
-        self.log("avg_val_acc", acc)
+        loss = self.loss_func(all_preds, y).mean()
+        self.log("val_epoch_loss", loss)
+
+        metrics = self.compute_metrics(
+            all_preds, y, self.logit_func, self.multi_label, "val_epoch"
+        )
+        self.log_dict(metrics)
+
+        if metrics["val_epoch_f1_macro"] > self.best_f1:
+            self.best_model_logits = all_preds
+            self.best_f1 = metrics["val_epoch_f1_macro"]
+            self.best_epoch = self.epoch
+
+        self.epoch += 1
+        # acc = torch.stack([out['acc'] for out in outputs]).mean()
+        # self.log("avg_val_acc", acc)
 
 
 class lstm_data(pl.LightningDataModule):
