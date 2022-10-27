@@ -97,4 +97,9 @@ trainer = Trainer(
     logger = logger
 )
 trainer.fit(model, data)
-print('Done!')
+print('Done Training!')
+
+best_epoch = model.best_epoch
+best_preds = model.best_model_logits
+torch.save(best_preds, f'lightnings_logs/{logger_name}/{TARGET}_best_epoch_{best_epoch}.pt')
+print('Saved model logits for best F1-score')

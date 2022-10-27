@@ -46,6 +46,11 @@ class lstm_text(pl.LightningModule):
         
         self.save_hyperparameters()
         
+        self.best_model_logits = None
+        self.best_f1 = 0
+        self.best_epoch = 0
+        self.epoch = 0
+        
         self.lstm = nn.LSTM(input_size    = self.n_features,
                             hidden_size   = self.hidden_size,
                             num_layers    = self.num_layers,
@@ -90,12 +95,12 @@ class lstm_text(pl.LightningModule):
             auroc_macro = multilabel_auroc(preds, targets, num_labels=self.output_size, average="macro", thresholds=None)
             
             metrics = {
-                f'{current}_step_acc_exact':       acc_exact,
-                f'{current}_step_acc_macro':       acc_macro,
+                f'{current}_acc_exact':       acc_exact,
+                f'{current}_acc_macro':       acc_macro,
                 # f'{current}_step_precision_macro': precision_macro,
                 # f'{current}_step_recall_macro':    recall_macro,
-                f'{current}_step_f1_macro':        f1_macro,
-                f'{current}_step_AUROC_macro':     auroc_macro
+                f'{current}_f1_macro':        f1_macro,
+                f'{current}_AUROC_macro':     auroc_macro
             }
 
         else:
@@ -107,12 +112,12 @@ class lstm_text(pl.LightningModule):
             auroc_macro = multiclass_auroc(preds, targets, num_classes=self.output_size, average="macro", thresholds=None)
             
             metrics = {
-                f'{current}_step_acc_micro':       acc_micro,
-                f'{current}_step_acc_macro':       acc_macro,
+                f'{current}_acc_micro':       acc_micro,
+                f'{current}_acc_macro':       acc_macro,
                 # f'{current}_step_precision_macro': precision_macro,
                 # f'{current}_step_recall_macro':    recall_macro,
-                f'{current}_step_f1_macro':        f1_macro,
-                f'{current}_step_AUROC_macro':     auroc_macro
+                f'{current}_f1_macro':        f1_macro,
+                f'{current}_AUROC_macro':     auroc_macro
             }
             
         return metrics
@@ -140,7 +145,7 @@ class lstm_text(pl.LightningModule):
         preds = self(x)
         loss = self.loss_func(preds, y)
 
-        # metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'train')
+        # metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'train_step')
         self.log('train_step_loss', loss)
         # self.log_dict(metrics)
         return {'loss': loss}
@@ -151,16 +156,26 @@ class lstm_text(pl.LightningModule):
         preds = self(x)
         loss = self.loss_func(preds, y)
         
-        metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'val')
         self.log('val_step_loss', loss)
-        self.log_dict(metrics)
-        return {'loss': loss}
+        return {'preds': preds, 'target': y}
 
     
     def validation_epoch_end(self, outputs) -> None:
-        loss = torch.stack([out['loss'] for out in outputs]).mean()
-        self.log("avg_val_loss", loss)
-
+        all_preds = torch.stack(outputs['preds'])
+        y         = torch.stack(outputs['target'])
+        
+        loss = self.loss_func(all_preds).mean()
+        self.log("val_epoch_loss", loss)
+        
+        metrics = self.compute_metrics(all_preds, y, self.logit_func, self.multi_label, 'val_epoch')
+        self.log_dict(metrics)
+        
+        if metrics['val_epoch_f1_macro'] > self.best_f1:
+            self.best_model_logits = all_preds
+            self.best_f1 = metrics['val_epoch_f1_macro']
+            self.best_epoch = self.epoch
+        
+        self.epoch += 1
         # acc = torch.stack([out['acc'] for out in outputs]).mean()
         # self.log("avg_val_acc", acc)
 
