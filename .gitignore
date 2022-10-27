@@ -6,7 +6,7 @@ checkpoints/
 *.err
 *.out
 batch_out_files
-test_trainer/
+huggingface_saves/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

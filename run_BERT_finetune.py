@@ -146,23 +146,27 @@ for k in range(NUM_SPLITS):
     #     num_training_steps=100
     # )
     
+    logging_name = f'huggingface_logs'\
+                   +f'/{TARGET}'\
+                   +f'/BERT-BS{BATCH_SIZE}'\
+                   +f'-BA{BATCH_ACCUMALATION}'\
+                   +f'-ep{NUM_EPOCHS}'\
+                   +f'-seed{SEED}'\
+                   +f'-WD{WEIGHT_DECAY}'\
+                   +f'-LR{LEARNING_RATE}'\
+                   +f'/CV_{k+1}',
+    
     training_args = TrainingArguments(
-        output_dir="test_trainer",
-        save_strategy='no',
+        output_dir=f'huggingface_saves/{TARGET}',
+        save_strategy='epoch',
+        save_total_limit=1,
+        metric_for_best_model='eval_f1_macro',  # f1-score for now
+        greater_is_better=True,
+        load_best_model_at_end=True,
         logging_strategy='epoch',
-        # logging_steps=1,
-        logging_dir=f'huggingface_logs'\
-                    +f'/{TARGET}'\
-                    +f'/BERT-BS{BATCH_SIZE}'\
-                    +f'-BA{BATCH_ACCUMALATION}'\
-                    +f'-ep{NUM_EPOCHS}'\
-                    +f'-seed{SEED}'\
-                    +f'-WD{WEIGHT_DECAY}'\
-                    +f'-LR{LEARNING_RATE}'\
-                    +f'/CV_{k+1}',
+        logging_dir=logging_name,
         report_to='tensorboard',
         evaluation_strategy='epoch',
-        # eval_steps=1,
         seed=SEED,
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
@@ -182,3 +186,11 @@ for k in range(NUM_SPLITS):
     )
     
     trainer.train()
+
+    print(trainer.evaluate())
+    outputs = trainer.model(input_ids=val_dataset['input_ids'], labels=val_dataset['labels'])
+    
+    
+    if k == 0:
+        break
+    
