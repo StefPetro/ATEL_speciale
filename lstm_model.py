@@ -110,13 +110,13 @@ class lstm_text(pl.LightningModule):
             # precision_macro = multilabel_precision(preds, targets, num_labels=self.output_size)
             # recall_macro = multilabel_recall(preds, targets, num_labels=self.output_size)
             f1_macro = multilabel_f1_score(preds, targets, num_labels=self.output_size)
-            auroc_macro = multilabel_auroc(
-                preds,
-                targets,
-                num_labels=self.output_size,
-                average="macro",
-                thresholds=None,
-            )
+            # auroc_macro = multilabel_auroc(
+            #     preds,
+            #     targets,
+            #     num_labels=self.output_size,
+            #     average="macro",
+            #     thresholds=None,
+            # )
 
             metrics = {
                 f"{current}_acc_exact": acc_exact,
@@ -124,7 +124,7 @@ class lstm_text(pl.LightningModule):
                 # f'{current}_step_precision_macro': precision_macro,
                 # f'{current}_step_recall_macro':    recall_macro,
                 f"{current}_f1_macro": f1_macro,
-                f"{current}_AUROC_macro": auroc_macro,
+                # f"{current}_AUROC_macro": auroc_macro,
             }
 
         else:
@@ -137,13 +137,13 @@ class lstm_text(pl.LightningModule):
             # precision_macro = multiclass_precision(preds, targets, num_classes=self.output_size)
             # recall_macro = multiclass_recall(preds, targets, num_classes=self.output_size)
             f1_macro = multiclass_f1_score(preds, targets, num_classes=self.output_size)
-            auroc_macro = multiclass_auroc(
-                preds,
-                targets,
-                num_classes=self.output_size,
-                average="macro",
-                thresholds=None,
-            )
+            # auroc_macro = multiclass_auroc(
+            #     preds,
+            #     targets,
+            #     num_classes=self.output_size,
+            #     average="macro",
+            #     thresholds=None,
+            # )
 
             metrics = {
                 f"{current}_acc_micro": acc_micro,
@@ -151,7 +151,7 @@ class lstm_text(pl.LightningModule):
                 # f'{current}_step_precision_macro': precision_macro,
                 # f'{current}_step_recall_macro':    recall_macro,
                 f"{current}_f1_macro": f1_macro,
-                f"{current}_AUROC_macro": auroc_macro,
+                # f"{current}_AUROC_macro": auroc_macro,
             }
 
         return metrics
