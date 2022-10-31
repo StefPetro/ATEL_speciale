@@ -56,10 +56,10 @@ print('Loading complete!')
 settings = {
     'multi_label':   True if problem_type == 'multilabel' else False,
     'n_features':    EMBEDDING_SIZE,
-    "hidden_size":   512/2,
+    "hidden_size":   int(512/2),
     "num_layers":    4,
-    'l1_size':       512/2,
-    'l2_size':       256/2,
+    'l1_size':       int(512/2),
+    'l2_size':       int(256/2),
     "dropout":       0.2,
     "batch_size":    32,
     "learning_rate": 1e-5,
