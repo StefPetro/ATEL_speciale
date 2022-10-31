@@ -10,3 +10,4 @@ scikit_learn
 torch==1.12.1
 torchmetrics==0.10.0
 transformers
+shutil
