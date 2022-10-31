@@ -1,5 +1,7 @@
 import re
 import random
+import yaml
+from yaml import CLoader
 from typing import Tuple
 import numpy as np
 import pandas as pd
@@ -7,7 +9,6 @@ import fasttext
 import torch
 from torch.nn.utils.rnn import pad_sequence
 import atel.data
-from sklearn.model_selection import KFold
 
 
 def set_seed(seed: int = 42) -> None:
@@ -88,6 +89,7 @@ def get_text_level_data(book_col: atel.data.BookCollection) -> list:
 def get_labels(
     book_col: atel.data.BookCollection, target_col: str
 ) -> Tuple[np.ndarray, np.ndarray, list]:
+
     list_cols = [  # columns that consists of lists
         "Genre",
         "Attitude",
@@ -120,32 +122,12 @@ def get_labels(
         ex_book_df["Semantisk univers"] == "Vilde dyr\xa0", "Semantisk univers"
     ] = "Vilde dyr"
 
-    # TODO: Make this into yaml file
-    groupings = {
-        "Dyr og natur": [
-            "Kæledyr",
-            "Husdyr",
-            "Vilde dyr (danske)",
-            "Vilde dyr",
-            "Natur",
-        ],
-        "Det nære": ["Mig selv", "Venner", "Familie", "Legetøj og mine ting", "Skole"],
-        "Oplevelse": ["Oplevelse", "Højtider"],
-        "Menneskeliv": [
-            "Biler og andre køretøjer",
-            "Politi og militær",
-            "Teknologi",
-            "Mennesker",
-            "Monstre, guder og andre fantasivæsener",
-            "Sport",
-            "Mad",
-            "Bøger, film, musik, computerspil",
-        ],
-    }
+    with open("category_groupings.yaml", "r", encoding="utf-8") as f:
+        groupings = yaml.load(f, Loader=CLoader)
 
-    for group in groupings:
+    for group in groupings["Semantisk univers"]:
         ex_book_df["Semantisk univers"] = ex_book_df["Semantisk univers"].replace(
-            groupings[group], group
+            groupings["Semantisk univers"][group], group
         )
 
     col_df = ex_book_df[["book_id", target_col]].drop_duplicates()
@@ -155,6 +137,12 @@ def get_labels(
     labels = [c[len(target_col) + 1 :] for c in one_hot_df.columns]
 
     targets = one_hot_df.values
+    if target_col in [
+        "Perspektiv",
+        "Holistisk vurdering",
+    ]:  # if target col is one of the two multi class categories
+        targets = np.argmax(targets, axis=1)
+
     target_ids = np.array(one_hot_df.index)
 
     return target_ids, targets, labels
@@ -174,3 +162,24 @@ def get_fasttext_embeddings(
     assert el_padded.shape[1] == seq_len, "Sequence length is not equal max length"
 
     return book_ids, el_padded
+
+
+def get_pandas_dataframe(
+    book_col: atel.data.BookCollection, target_col: str
+) -> Tuple[pd.DataFrame, list]:
+    """Create dataframe of data"""
+
+    book_ids, texts = clean_book_collection_texts(book_col, lowercase=False)
+    target_ids, targets, labels = get_labels(book_col, target_col)
+
+    mask = np.isin(target_ids, book_ids)
+    targets = targets[mask]
+
+    if len(targets.shape) > 1:  # if targets are multilabel, make sure they are float
+        targets = targets.astype(float)
+    else:  # else it is single label, and needs to be int
+        targets = targets.astype(int)
+
+    data = {"text": texts, "labels": targets.tolist()}
+
+    return pd.DataFrame(data), labels
