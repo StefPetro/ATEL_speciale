@@ -33,7 +33,7 @@ CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
 SEED = 42
 NUM_FOLDS = 10
 NUM_EPOCHS = 5000
-EMBEDDING_SIZE = 300
+EMBEDDING_SIZE = 100
 set_seed(SEED)
 
 with open('target_info.yaml', 'r', encoding='utf-8') as f:
@@ -56,10 +56,10 @@ print('Loading complete!')
 settings = {
     'multi_label':   True if problem_type == 'multilabel' else False,
     'n_features':    EMBEDDING_SIZE,
-    "hidden_size":   512,
+    "hidden_size":   512/2,
     "num_layers":    4,
-    'l1_size':       512,
-    'l2_size':       256,
+    'l1_size':       512/2,
+    'l2_size':       256/2,
     "dropout":       0.2,
     "batch_size":    32,
     "learning_rate": 1e-5,
