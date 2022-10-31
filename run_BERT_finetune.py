@@ -192,6 +192,9 @@ for k in range(NUM_SPLITS):
     outputs = trainer.model(input_ids=torch.tensor(val_dataset['input_ids']), 
                             labels=torch.tensor(val_dataset['labels']))
     
+    print(outputs)
+    # torch.save(outputs, f'{logging_name}/{TARGET}_best_model_logits.pt')
+    
     
     if k == 0:
         break
