@@ -219,18 +219,14 @@ for k in range(NUM_SPLITS):
 
     trainer.train()
 
-    print(trainer.evaluate())
+    trainer.model.to('cpu')
     outputs = trainer.model(
         input_ids=torch.tensor(val_dataset["input_ids"]),
         labels=torch.tensor(val_dataset["labels"]),
     )
 
-    print(outputs)
-    # torch.save(outputs, f'{logging_name}/{TARGET}_best_model_logits.pt')
-
-    if k == 0:
-        break
-
-## Removes the saved checkpoints, as they take too much space
-for f in os.listdir(f"huggingface_saves/{TARGET}"):
-    shutil.rmtree(os.path.join(f"huggingface_saves/{TARGET}", f))
+    torch.save(outputs.logits, f'{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt')
+    
+    ## Removes the saved checkpoints, as they take too much space
+    for f in os.listdir(f"huggingface_saves/{TARGET}"):
+		shutil.rmtree(os.path.join(f"huggingface_saves/{TARGET}", f))
