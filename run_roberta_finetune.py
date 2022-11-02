@@ -229,4 +229,5 @@ for k in range(NUM_SPLITS):
     
     ## Removes the saved checkpoints, as they take too much space
     for f in os.listdir(f"huggingface_saves/{TARGET}"):
-		shutil.rmtree(os.path.join(f"huggingface_saves/{TARGET}", f))
+        shutil.rmtree(os.path.join(f"huggingface_saves/{TARGET}", f))
+        
