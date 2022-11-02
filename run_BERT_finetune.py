@@ -196,6 +196,6 @@ for k in range(NUM_SPLITS):
     
     torch.save(outputs.logits, f'{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt')
 
-## Removes the saved checkpoints, as they take too much space
-for f in os.listdir(f'huggingface_saves/{TARGET}'):
-    shutil.rmtree(os.path.join(f'huggingface_saves/{TARGET}', f))
+    ## Removes the saved checkpoints, as they take too much space
+    for f in os.listdir(f'huggingface_saves/{TARGET}'):
+        shutil.rmtree(os.path.join(f'huggingface_saves/{TARGET}', f))
