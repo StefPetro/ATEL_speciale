@@ -11,7 +11,7 @@ from transformers import (
 
 config = RobertaConfig(
     vocab_size=5_000,
-    max_position_embeddings=130, #514,
+    max_position_embeddings=130,  # 514,
     hidden_size=256,
     intermediate_size=1024,
     num_attention_heads=8,
@@ -20,7 +20,7 @@ config = RobertaConfig(
 )
 
 tokenizer = RobertaTokenizer.from_pretrained(
-    "./tokenizers/BPEtokenizer_121022", max_length=128 #512
+    "./tokenizers/BPEtokenizer_121022", max_length=128  # 512
 )
 
 model = RobertaForMaskedLM(config=config).cuda()

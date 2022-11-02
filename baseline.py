@@ -46,7 +46,9 @@ def compute_metrics(preds, labels, problem_type, num_labels):
 
     if problem_type == "multilabel":
         acc_exact = multilabel_exact_match(preds, labels, num_labels=num_labels)
-        acc_macro = multilabel_accuracy(preds, labels, num_labels=num_labels)
+        acc_macro = multilabel_accuracy(
+            preds, labels, num_labels=num_labels, average="macro"
+        )
 
         # How are they calculated?:
         # The metrics are calculated for each label.
@@ -64,7 +66,8 @@ def compute_metrics(preds, labels, problem_type, num_labels):
         # )
 
         metrics = {
-            "accuracy_exact/micro": acc_exact,
+            "accuracy_exact": acc_exact,
+            "accuracy_micro": np.nan,
             "accuracy_macro": acc_macro,
             # 'precision_macro': precision_macro,
             # 'recall_macro':    recall_macro,
@@ -88,7 +91,8 @@ def compute_metrics(preds, labels, problem_type, num_labels):
         # )
 
         metrics = {
-            "accuracy_exact/micro": acc_micro,
+            "accuracy_exact": np.nan,
+            "accuracy_micro": acc_micro,
             "accuracy_macro": acc_macro,
             # 'precision_macro': precision_macro,
             # 'recall_macro':    recall_macro,
@@ -116,7 +120,6 @@ def evaluator(book_col, X, target_col, clf):
         # Multi label classification
         model = MultiOutputClassifier(clf)
     else:
-        y = y.argmax(axis=1)
         model = clf
 
     kf = KFold(n_splits=10, shuffle=True, random_state=42)
@@ -140,8 +143,8 @@ def evaluator(book_col, X, target_col, clf):
     metrics_df = pd.DataFrame(metrics)
     cv_score = metrics_df.mean(axis=0)
 
-    # sem = np.std(acc) / np.sqrt(len(acc))
-    return cv_score
+    sem = np.std(metrics_df, axis=0) / np.sqrt(len(metrics_df))
+    return cv_score, sem
 
 
 ## Initial load and clean
@@ -190,10 +193,22 @@ classifiers = [
 
 for clf in classifiers:
     scores = pd.DataFrame()
+    SEMs = pd.DataFrame()
     for t in target_cols:
-        cv = evaluator(book_col, X, t, clf)
+        cv, sem = evaluator(book_col, X, t, clf)
         scores[t] = cv
+        SEMs[t] = sem
 
     print(f"Classifier: {clf}")
-    print(scores)
-    print(scores.mean(axis=1))
+    print(
+        ((scores * 100).round(1)).astype(str)
+        + " \pm "
+        + ((SEMs * 100).round(1)).astype(str)
+    )
+    print(
+        (scores.mean(axis=1) * 100).round(1).astype(str)
+        + " \pm "
+        + (SEMs.mean(axis=1) * 100).round(1).astype(str)
+    )
+
+    # print(SEMs)
