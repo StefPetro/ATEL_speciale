@@ -1,23 +1,22 @@
-import warnings
-
-import fasttext
-import fasttext.util
-import pytorch_lightning as pl
-import torch
-import yaml
-from pytorch_lightning import Trainer
-from yaml import CLoader
-import argparse
-
+import numpy as np
 from atel.data import BookCollection
 from data_clean import set_seed
 from lstm_model import lstm_data, lstm_text
+import torch
+import pytorch_lightning as pl
+from pytorch_lightning import Trainer
+import fasttext
+import fasttext.util
+import argparse
+import yaml
+from yaml import CLoader
+import warnings
 
 warnings.filterwarnings("ignore", ".*does not have many workers.*")
 
 parser = argparse.ArgumentParser(description="Arguments for training the LSTM model")
 parser.add_argument(
-    "--target_col", help="The target column to train the LSTM model on.", default=None
+    "--target_col", help="The target column to train the BERT model on.", default=None
 )
 parser.add_argument(
     "--cv", help="Which cross-validation fold to use. Can be 1-10", default=1, type=int
@@ -28,9 +27,9 @@ TARGET = args.target_col
 CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
 
 SEED = 42
-NUM_FOLDS = 10
-NUM_EPOCHS = 10000
-EMBEDDING_SIZE = 100
+NUM_FOLDS = 1
+NUM_EPOCHS = 1
+EMBEDDING_SIZE = 300
 set_seed(SEED)
 
 with open("target_info.yaml", "r", encoding="utf-8") as f:
@@ -48,7 +47,8 @@ print("Loading fastText model...")
 ft = fasttext.load_model(
     "fasttext_model/cc.da.300.bin"
 )  # Download from fastTexts website
-fasttext.util.reduce_model(ft, 100)
+if EMBEDDING_SIZE < 300:
+    fasttext.util.reduce_model(ft, EMBEDDING_SIZE)
 print("Loading complete!")
 
 settings = {
@@ -64,28 +64,28 @@ settings = {
 
 print(f"RUNNING CV K = {CV+1}/{NUM_FOLDS}")
 
-model = lstm_text(**settings)
 data = lstm_data(
     book_col=book_col,
     target_col=TARGET,
     ft=ft,
     batch_size=settings["batch_size"],
-    seq_len=128,
+    seq_len=171,
     seed=SEED,
     k=CV,
+    problem_type=problem_type,
 )
-logger_name = f'{TARGET.replace(" ", "_")}-cv{k}-max_epoch_{NUM_EPOCHS}'
-logger = pl.loggers.TensorBoardLogger(save_dir="lightning_logs/", name=logger_name)
+model = lstm_text(**settings)
+logger_name = f'{TARGET.replace(" ", "_")}-cv{CV}-max_epoch_{NUM_EPOCHS}'
+logger = pl.loggers.TensorBoardLogger(save_dir="lightning_logs", name=logger_name)
 
 trainer = Trainer(
     max_epochs=NUM_EPOCHS,
     gpus=1 if torch.cuda.is_available() else 0,
-    log_every_n_steps=1,
+    log_every_n_steps=3,
     enable_checkpointing=False,
     logger=logger,
 )
 trainer.fit(model, data)
-
 print("Done Training!")
 
 best_epoch = model.best_epoch

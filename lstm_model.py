@@ -5,7 +5,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset, random_split, dataset
 from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
+import fasttext
+import pytorch_lightning as pl
+from torchmetrics.classification import MultilabelAccuracy
 from torchmetrics.functional.classification import multilabel_exact_match
 from torchmetrics.functional.classification import (
     multilabel_accuracy,
@@ -24,11 +26,8 @@ from torchmetrics.functional.classification import (
     multiclass_precision,
 )
 from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
-
-import fasttext
-import pytorch_lightning as pl
-import torchmetrics
 from data_clean import *
+
 
 settings = {
     "multi_label": True,
@@ -72,15 +71,6 @@ class lstm_text(pl.LightningModule):
             batch_first=True,
         )
 
-        # self.l1 = nn.Linear(
-        #     in_features=self.hidden_size * 2,  # times 2 if lstm is bidirectional
-        #     out_features=self.num_l1,
-        # )
-
-        # self.out_layer = nn.Linear(
-        #     in_features=self.num_l1, out_features=self.output_size
-        # )
-
         self.dropout = nn.Dropout(p=0.2)
 
         self.out_layer = nn.Linear(
@@ -110,13 +100,6 @@ class lstm_text(pl.LightningModule):
             # precision_macro = multilabel_precision(preds, targets, num_labels=self.output_size)
             # recall_macro = multilabel_recall(preds, targets, num_labels=self.output_size)
             f1_macro = multilabel_f1_score(preds, targets, num_labels=self.output_size)
-            # auroc_macro = multilabel_auroc(
-            #     preds,
-            #     targets,
-            #     num_labels=self.output_size,
-            #     average="macro",
-            #     thresholds=None,
-            # )
 
             metrics = {
                 f"{current}_acc_exact": acc_exact,
@@ -124,7 +107,6 @@ class lstm_text(pl.LightningModule):
                 # f'{current}_step_precision_macro': precision_macro,
                 # f'{current}_step_recall_macro':    recall_macro,
                 f"{current}_f1_macro": f1_macro,
-                # f"{current}_AUROC_macro": auroc_macro,
             }
 
         else:
@@ -137,13 +119,6 @@ class lstm_text(pl.LightningModule):
             # precision_macro = multiclass_precision(preds, targets, num_classes=self.output_size)
             # recall_macro = multiclass_recall(preds, targets, num_classes=self.output_size)
             f1_macro = multiclass_f1_score(preds, targets, num_classes=self.output_size)
-            # auroc_macro = multiclass_auroc(
-            #     preds,
-            #     targets,
-            #     num_classes=self.output_size,
-            #     average="macro",
-            #     thresholds=None,
-            # )
 
             metrics = {
                 f"{current}_acc_micro": acc_micro,
@@ -151,7 +126,6 @@ class lstm_text(pl.LightningModule):
                 # f'{current}_step_precision_macro': precision_macro,
                 # f'{current}_step_recall_macro':    recall_macro,
                 f"{current}_f1_macro": f1_macro,
-                # f"{current}_AUROC_macro": auroc_macro,
             }
 
         return metrics
@@ -163,15 +137,11 @@ class lstm_text(pl.LightningModule):
         return optim
 
     def forward(self, x):
-        # lstm input: (N, L, H_in) = (batch_size, seq_len, embedding_size)
+        # lstm input:
+        # (N, L, H_in) = (batch_size, seq_len, embedding_size)
         lstm_out, (h_n, c_n) = self.lstm(x)
-        # out = F.gelu(lstm_out[:, -1])
-        # out = self.l1(out)
-        # out = F.gelu(out)
-        out = self.dropout(lstm_out[:, -1])
-        # out = self.out_layer(out)
-
-        out = self.out_layer(out)
+        lstm_out = self.dropout(lstm_out[:, -1])
+        out = self.out_layer(lstm_out)
         return out
 
     def training_step(self, train_batch, batch_idx):
@@ -217,7 +187,7 @@ class lstm_text(pl.LightningModule):
 class lstm_data(pl.LightningDataModule):
     def __init__(
         self,
-        book_col,
+        book_col: atel.data.BookCollection,
         target_col: str,
         ft: fasttext.FastText,
         seq_len: int = 256,
@@ -225,6 +195,7 @@ class lstm_data(pl.LightningDataModule):
         k: int = 0,
         seed: int = 42,
         num_splits: int = 10,
+        problem_type: str = "multilabel",
     ):
         super().__init__()
 
@@ -236,6 +207,7 @@ class lstm_data(pl.LightningDataModule):
         self.seq_len = seq_len
         self.seed = seed
         self.num_splits = num_splits
+        self.problem_type = problem_type
 
     def setup(self, stage: Optional[str] = None):
 
@@ -243,7 +215,10 @@ class lstm_data(pl.LightningDataModule):
         target_ids, targets, labels = get_labels(self.book_col, self.target_col)
 
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
-        y = torch.from_numpy(targets[mask]).float()
+        if self.problem_type == "multilabel":
+            y = torch.from_numpy(targets[mask]).float()
+        elif self.problem_type == "multiclass":
+            y = torch.from_numpy(targets[mask]).long()
 
         full_data = TensorDataset(X, y)
 
