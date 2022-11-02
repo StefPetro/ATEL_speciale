@@ -36,7 +36,9 @@ def compute_metrics(preds, labels, problem_type, num_labels):
 
     if problem_type == "multilabel":
         acc_exact = multilabel_exact_match(preds, labels, num_labels=num_labels)
-        acc_macro = multilabel_accuracy(preds, labels, num_labels=num_labels)
+        acc_macro = multilabel_accuracy(
+            preds, labels, num_labels=num_labels, average="macro"
+        )
 
         # How are they calculated?:
         # The metrics are calculated for each label.
@@ -54,7 +56,8 @@ def compute_metrics(preds, labels, problem_type, num_labels):
         # )
 
         metrics = {
-            "accuracy_exact/micro": acc_exact,
+            "accuracy_exact": acc_exact,
+            "accuracy_micro": np.nan,
             "accuracy_macro": acc_macro,
             # 'precision_macro': precision_macro,
             # 'recall_macro':    recall_macro,
@@ -78,7 +81,8 @@ def compute_metrics(preds, labels, problem_type, num_labels):
         # )
 
         metrics = {
-            "accuracy_exact/micro": acc_micro,
+            "accuracy_exact": np.nan,
+            "accuracy_micro": acc_micro,
             "accuracy_macro": acc_macro,
             # 'precision_macro': precision_macro,
             # 'recall_macro':    recall_macro,
@@ -100,11 +104,10 @@ def largest_multilabel(targets):
 
 
 def largest_multiclass(targets):
-    N, M = targets.shape
-    preds = np.zeros((N, M))
-
-    largest_class = targets.sum(axis=0).argmax()
-    preds[:, largest_class].fill(1)
+    N = len(targets)
+    counts = np.bincount(targets)
+    largest_class = np.argmax(counts)
+    preds = np.ones(N) * largest_class
     return preds
 
 
@@ -124,10 +127,8 @@ for target_col, info in target_problems.items():
 
     elif problem_type == "multiclass":
         preds = largest_multiclass(targets)
-        metrics = compute_metrics(
-            preds.argmax(axis=1), targets.argmax(axis=1), problem_type, num_labels
-        )
+        metrics = compute_metrics(preds, targets, problem_type, num_labels)
         scores[target_col] = pd.Series(metrics, name=target_col, dtype="float")
 
-print(scores)
-print(scores.mean(axis=1))
+print(((scores * 100).round(1)).astype(str))
+print((scores.mean(axis=1) * 100).round(1).astype(str))
