@@ -32,7 +32,7 @@ CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
 
 SEED = 42
 NUM_FOLDS = 10
-NUM_EPOCHS = 20_000
+NUM_EPOCHS = 40_000
 EMBEDDING_SIZE = 100
 set_seed(SEED)
 
