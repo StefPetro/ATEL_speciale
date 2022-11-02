@@ -32,7 +32,7 @@ CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
 
 SEED = 42
 NUM_FOLDS = 10
-NUM_EPOCHS = 10_000
+NUM_EPOCHS = 20_000
 EMBEDDING_SIZE = 100
 set_seed(SEED)
 
@@ -61,7 +61,7 @@ settings = {
     'l1_size':       int(512/2),
     'l2_size':       int(256/2),
     "dropout":       0.2,
-    "batch_size":    64,
+    "batch_size":    128,
     "learning_rate": 1e-5,
     "output_size":   NUM_LABELS
 }
@@ -86,6 +86,7 @@ logger_name = f'{TARGET.replace(" ", "_")}/'\
                 +f'-lstm_size_{settings["hidden_size"]}'\
                 +f'-l1_size_{settings["l1_size"]}'\
                 +f'-l2_size_{settings["l2_size"]}/'\
+                +f'bs_{settings["batch_size"]}/'\
                 +f'CV_{CV+1}'
 logger = pl.loggers.TensorBoardLogger(save_dir='lightning_logs', name=logger_name)
 

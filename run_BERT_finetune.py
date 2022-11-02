@@ -149,7 +149,7 @@ for k in range(NUM_SPLITS):
     # )
     
     logging_name = f'huggingface_logs'\
-                   +f'/{TARGET}'\
+                   +f'/{TARGET.replace(" ", "_")}'\
                    +f'/BERT-BS{BATCH_SIZE}'\
                    +f'-BA{BATCH_ACCUMALATION}'\
                    +f'-ep{NUM_EPOCHS}'\
