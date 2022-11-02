@@ -61,7 +61,7 @@ settings = {
     'l1_size':       int(512/2),
     'l2_size':       int(256/2),
     "dropout":       0.2,
-    "batch_size":    32,
+    "batch_size":    64,
     "learning_rate": 1e-5,
     "output_size":   NUM_LABELS
 }
