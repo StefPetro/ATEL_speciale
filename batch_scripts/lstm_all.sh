@@ -7,6 +7,6 @@ for l in $list
 do
     for t in $target
     do
-        echo -n ./batch_scripts/LSTM_scripts/$t/lstm_${t}_cv$l.sh
+        bsub -n ./batch_scripts/LSTM_scripts/$t/lstm_${t}_cv$l.sh
     done
 done
