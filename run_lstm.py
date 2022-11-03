@@ -28,7 +28,7 @@ CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
 
 SEED = 42
 NUM_FOLDS = 1
-NUM_EPOCHS = 1
+NUM_EPOCHS = 10_000
 EMBEDDING_SIZE = 300
 set_seed(SEED)
 
@@ -54,7 +54,7 @@ print("Loading complete!")
 settings = {
     "multi_label": True if problem_type == "multilabel" else False,
     "n_features": EMBEDDING_SIZE,
-    "hidden_size": 256,
+    "hidden_size": 128,
     "num_layers": 4,
     "dropout": 0.2,
     "batch_size": 128,
