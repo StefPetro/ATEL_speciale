@@ -1,6 +1,6 @@
 #!/bin/sh 
 
-list = "1"
+list="1"
 
 for l in $list
 do
