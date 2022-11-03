@@ -38,4 +38,4 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 source ./venv/bin/activate
 # echo $VIRTUAL_ENV
 
-python3 run_lstm.py --target_col "Stemmer" --cv 1
+python3 run_lstm.py --target_col "Stemmer" --cv 3
