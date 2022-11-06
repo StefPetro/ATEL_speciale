@@ -1,0 +1,10 @@
+batch_size: 64
+dropout: 0.2
+hidden_size: 256
+l1_size: 256
+l2_size: 128
+learning_rate: 1.0e-05
+multi_label: true
+n_features: 100
+num_layers: 4
+output_size: 5
