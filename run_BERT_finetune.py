@@ -189,7 +189,7 @@ for k in range(NUM_SPLITS):
     
     trainer.train()
     
-    # print(trainer.evaluate())
+    print(trainer.evaluate())
     outputs = trainer.model(input_ids=torch.tensor(val_dataset['input_ids']).to('cuda'), 
                             labels=torch.tensor(val_dataset['labels']).to('cuda'))
     
