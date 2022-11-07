@@ -8,18 +8,9 @@ from torchmetrics.functional.classification import (
     multilabel_f1_score,
 )
 from torchmetrics.functional.classification import (
-    multilabel_recall,
-    multilabel_precision,
-)
-from torchmetrics.functional.classification import (
     multiclass_accuracy,
     multiclass_f1_score,
 )
-from torchmetrics.functional.classification import (
-    multiclass_recall,
-    multiclass_precision,
-)
-from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
 from sklearn.model_selection import KFold
 from data_clean import *
 from atel.data import BookCollection
@@ -97,29 +88,12 @@ def compute_metrics(eval_pred):
     if problem_type == "multilabel":
         acc_exact = multilabel_exact_match(preds, labels, num_labels=NUM_LABELS)
         acc_macro = multilabel_accuracy(preds, labels, num_labels=NUM_LABELS)
-
-        # How are they calculated?:
-        # The metrics are calculated for each label.
-        # So if there is 4 labels, then 4 recalls are calculated.
-        # These 4 values are then averaged, which is the end score that is logged.
-        # The default average applied is 'macro'
-        # precision_macro = multilabel_precision(preds, labels, num_labels=NUM_LABELS)
-        # recall_macro = multilabel_recall(preds, labels, num_labels=NUM_LABELS)
         f1_macro = multilabel_f1_score(preds, labels, num_labels=NUM_LABELS)
-
-        # AUROC score of 1 is a perfect score
-        # AUROC score of 0.5 corresponds to random guessing.
-        # auroc_macro = multilabel_auroc(
-        #     preds, labels, num_labels=NUM_LABELS, average="macro", thresholds=None
-        # )
 
         metrics = {
             "accuracy_exact": acc_exact,
             "accuracy_macro": acc_macro,
-            # 'precision_macro': precision_macro,
-            # 'recall_macro':    recall_macro,
             "f1_macro": f1_macro,
-            # "AUROC_macro": auroc_macro,
         }
     else:
         acc_micro = multiclass_accuracy(
@@ -128,20 +102,12 @@ def compute_metrics(eval_pred):
         acc_macro = multiclass_accuracy(
             preds, labels, num_classes=NUM_LABELS, average="macro"
         )
-        # precision_macro = multiclass_precision(preds, labels, num_classes=NUM_LABELS)
-        # recall_macro = multiclass_recall(preds, labels, num_classes=NUM_LABELS)
         f1_macro = multiclass_f1_score(preds, labels, num_classes=NUM_LABELS)
-        # auroc_macro = multiclass_auroc(
-        #     preds, labels, num_classes=NUM_LABELS, average="macro", thresholds=None
-        # )
 
         metrics = {
             "accuracy_micro": acc_micro,
             "accuracy_macro": acc_macro,
-            # 'precision_macro': precision_macro,
-            # 'recall_macro':    recall_macro,
             "f1_macro": f1_macro,
-            # "AUROC_macro": auroc_macro,
         }
 
     return metrics
@@ -192,7 +158,7 @@ for k in range(NUM_SPLITS):
         output_dir=f"huggingface_saves/{TARGET}",
         save_strategy="epoch",
         save_total_limit=1,
-        metric_for_best_model="eval_f1_macro",  # f1-score for now
+        metric_for_best_model="f1_macro",  # f1-score for now
         greater_is_better=True,
         load_best_model_at_end=True,
         logging_strategy="epoch",
