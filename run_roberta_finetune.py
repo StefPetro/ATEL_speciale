@@ -197,3 +197,5 @@ for k in range(NUM_SPLITS):
     for f in os.listdir(f"huggingface_saves/{TARGET}"):
         shutil.rmtree(os.path.join(f"huggingface_saves/{TARGET}", f))
         
+	break
+        
