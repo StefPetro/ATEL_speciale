@@ -184,13 +184,13 @@ for k in range(NUM_SPLITS):
     )
 
     trainer.train()
-    
-    trainer.save_model('BEST-RoBERTa')
-    
+
+    trainer.save_model("BEST-RoBERTa")
+
     print("Evaluate:")
     print(trainer.evaluate())
-	
-	trainer.model.eval()
+
+    trainer.model.eval()
     trainer.model.to("cpu")
     outputs = trainer.model(
         input_ids=torch.tensor(val_dataset["input_ids"]),
@@ -198,12 +198,14 @@ for k in range(NUM_SPLITS):
     )
 
     print(outputs)
-    
-    print(compute_metrics((torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]))))
+
+    print(
+        compute_metrics(
+            (torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]))
+        )
+    )
 
     torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
-    
-    
 
     # ## Removes the saved checkpoints, as they take too much space
     # for f in os.listdir(f"huggingface_saves/{TARGET}"):
