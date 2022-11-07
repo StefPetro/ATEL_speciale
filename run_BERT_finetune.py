@@ -189,11 +189,9 @@ for k in range(NUM_SPLITS):
     
     trainer.train()
     
-    print(trainer.evaluate())
-    outputs = trainer.model(input_ids=torch.tensor(val_dataset['input_ids']).to('cuda'), 
-                            labels=torch.tensor(val_dataset['labels']).to('cuda'))
-    
-    torch.save(outputs.logits, f'{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt')
+    eval_dict = trainer.evaluate()
+    with open(f'best_eval_{TARGET}_CV{k+1}.yml', 'w') as outfile:
+        yaml.dump(eval_dict, outfile, default_flow_style=False)
 
     ## Removes the saved checkpoints, as they take too much space
     for f in os.listdir(f'huggingface_saves/{TARGET}'):
@@ -202,4 +200,3 @@ for k in range(NUM_SPLITS):
     ## Last garbage collection
     del model
     del trainer
-    del outputs
