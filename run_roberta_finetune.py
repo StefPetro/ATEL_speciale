@@ -158,7 +158,7 @@ for k in range(NUM_SPLITS):
         output_dir=f"huggingface_saves/{TARGET}",
         save_strategy="epoch",
         save_total_limit=1,
-        metric_for_best_model="f1_macro",  # f1-score for now
+        metric_for_best_model="eval_f1_macro",  # f1-score for now
         greater_is_better=True,
         load_best_model_at_end=True,
         logging_strategy="epoch",
@@ -184,7 +184,13 @@ for k in range(NUM_SPLITS):
     )
 
     trainer.train()
-
+    
+    trainer.save_model('BEST-RoBERTa')
+    
+    print("Evaluate:")
+    print(trainer.evaluate())
+	
+	trainer.model.eval()
     trainer.model.to("cpu")
     outputs = trainer.model(
         input_ids=torch.tensor(val_dataset["input_ids"]),
@@ -192,12 +198,15 @@ for k in range(NUM_SPLITS):
     )
 
     print(outputs)
-    print(outputs.logits)
+    
+    print(compute_metrics((torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]))))
 
     torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
+    
+    
 
-    ## Removes the saved checkpoints, as they take too much space
-    for f in os.listdir(f"huggingface_saves/{TARGET}"):
-        shutil.rmtree(os.path.join(f"huggingface_saves/{TARGET}", f))
+    # ## Removes the saved checkpoints, as they take too much space
+    # for f in os.listdir(f"huggingface_saves/{TARGET}"):
+    #     shutil.rmtree(os.path.join(f"huggingface_saves/{TARGET}", f))
 
     break
