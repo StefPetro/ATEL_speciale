@@ -191,6 +191,9 @@ for k in range(NUM_SPLITS):
         labels=torch.tensor(val_dataset["labels"]),
     )
 
+    print(outputs)
+    print(outputs.logits)
+
     torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
 
     ## Removes the saved checkpoints, as they take too much space
