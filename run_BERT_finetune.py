@@ -190,7 +190,7 @@ for k in range(NUM_SPLITS):
     trainer.train()
     
     eval_dict = trainer.evaluate()
-    with open(f'best_eval_{TARGET}_CV{k+1}.yml', 'w') as outfile:
+    with open(f'{logging_name}/best_eval_{TARGET}_CV{k+1}.yml', 'w') as outfile:
         yaml.dump(eval_dict, outfile, default_flow_style=False)
 
     ## Removes the saved checkpoints, as they take too much space
