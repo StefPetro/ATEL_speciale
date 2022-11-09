@@ -223,3 +223,6 @@ for k in range(NUM_SPLITS):
     ## Last garbage collection
     del model
     del trainer
+    
+    if k == 0:
+        break
