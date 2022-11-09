@@ -45,9 +45,9 @@ training_args = TrainingArguments(
     do_predict=False,
     save_steps=10_000,
     save_total_limit=2,
-    warmup_ratio=0.2
+    warmup_ratio=0.2,
     logging_strategy="steps",
-    logging_steps=100
+    logging_steps=100,
     logging_dir="roberta_logs",
     report_to="tensorboard",
     
