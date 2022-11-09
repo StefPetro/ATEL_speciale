@@ -191,17 +191,17 @@ for k in range(NUM_SPLITS):
     print(trainer.evaluate())
 
     trainer.model.eval()
-    trainer.model.to("cpu")
     outputs = trainer.model(
-        input_ids=torch.tensor(val_dataset["input_ids"]),
-        labels=torch.tensor(val_dataset["labels"]),
+        input_ids=torch.tensor(val_dataset["input_ids"]).to('cuda'),
+        labels=torch.tensor(val_dataset["labels"]).to('cuda'),
+        attention_mask=torch.tensor(val_dataset["attention_mask"]).to('cuda')
     )
 
     print(outputs)
 
     print(
         compute_metrics(
-            (torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]))
+            (torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]).to('cuda'))
         )
     )
 
