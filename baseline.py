@@ -2,34 +2,19 @@ import lemmy
 import numpy as np
 import pandas as pd
 import spacy
+import torch
 import yaml
 from nltk.corpus import stopwords
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.linear_model import RidgeClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.model_selection import KFold, cross_val_score, train_test_split
+from sklearn.model_selection import KFold
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.naive_bayes import GaussianNB, MultinomialNB
-from torchmetrics.functional.classification import (
-    multiclass_accuracy,
-    multiclass_auroc,
-    multiclass_f1_score,
-    multiclass_precision,
-    multiclass_recall,
-    multilabel_accuracy,
-    multilabel_auroc,
-    multilabel_exact_match,
-    multilabel_f1_score,
-    multilabel_precision,
-    multilabel_recall,
-)
+from sklearn.naive_bayes import GaussianNB
 from yaml import CLoader
-import torch
-import torch.nn as nn
-
 
 from atel.data import BookCollection
+from compute_metrics import compute_metrics
 from data_clean import *
 
 ## Set seed
@@ -39,76 +24,13 @@ with open("target_info.yaml", "r", encoding="utf-8") as f:
     target_info = yaml.load(f, Loader=CLoader)
 
 
-def compute_metrics(preds, labels, problem_type, num_labels):
-
-    preds = torch.Tensor(preds)
-    labels = torch.tensor(labels)
-
-    if problem_type == "multilabel":
-        acc_exact = multilabel_exact_match(preds, labels, num_labels=num_labels)
-        acc_macro = multilabel_accuracy(
-            preds, labels, num_labels=num_labels, average="macro"
-        )
-
-        # How are they calculated?:
-        # The metrics are calculated for each label.
-        # So if there is 4 labels, then 4 recalls are calculated.
-        # These 4 values are then averaged, which is the end score that is logged.
-        # The default average applied is 'macro'
-        # precision_macro = multilabel_precision(preds, labels, num_labels=NUM_LABELS)
-        # recall_macro = multilabel_recall(preds, labels, num_labels=NUM_LABELS)
-        f1_macro = multilabel_f1_score(preds, labels, num_labels=num_labels)
-
-        # AUROC score of 1 is a perfect score
-        # AUROC score of 0.5 corresponds to random guessing.
-        # auroc_macro = multilabel_auroc(
-        #     preds, labels, num_labels=num_labels, average="macro", thresholds=None
-        # )
-
-        metrics = {
-            "accuracy_exact": acc_exact,
-            "accuracy_micro": np.nan,
-            "accuracy_macro": acc_macro,
-            # 'precision_macro': precision_macro,
-            # 'recall_macro':    recall_macro,
-            "f1_macro": f1_macro,
-            # "AUROC_macro": auroc_macro,
-        }
-    else:
-
-        acc_micro = multiclass_accuracy(
-            preds, labels, num_classes=num_labels, average="micro"
-        )
-        acc_macro = multiclass_accuracy(
-            preds, labels, num_classes=num_labels, average="macro"
-        )
-        # precision_macro = multiclass_precision(preds, labels, num_classes=NUM_LABELS)
-        # recall_macro = multiclass_recall(preds, labels, num_classes=NUM_LABELS)
-        f1_macro = multiclass_f1_score(preds, labels, num_classes=num_labels)
-
-        # auroc_macro = multiclass_auroc(
-        #     preds, labels, num_classes=num_labels, average="macro", thresholds=None
-        # )
-
-        metrics = {
-            "accuracy_exact": np.nan,
-            "accuracy_micro": acc_micro,
-            "accuracy_macro": acc_macro,
-            # 'precision_macro': precision_macro,
-            # 'recall_macro':    recall_macro,
-            "f1_macro": f1_macro,
-            # "AUROC_macro": auroc_macro,
-        }
-
-    return metrics
-
-
 def evaluator(book_col, X, target_col, clf):
     assert (
         target_col in target_info.keys()
     )  # checks if targets is part of the actual problem columns
 
     problem_type = target_info[target_col].get("problem_type")
+    multi_label = True if problem_type == 'multilabel' else False
     num_labels = target_info[target_col].get("num_labels")
 
     target_ids, targets, labels = get_labels(book_col, target_col)
@@ -116,7 +38,7 @@ def evaluator(book_col, X, target_col, clf):
     mask = np.isin(target_ids, book_ids)
     y = targets[mask]
 
-    if problem_type == "multilabel":
+    if multi_label:
         # Multi label classification
         model = MultiOutputClassifier(clf)
     else:
@@ -138,7 +60,10 @@ def evaluator(book_col, X, target_col, clf):
 
         y_pred = model.predict(X_val)
 
-        metrics.append(compute_metrics(y_pred, y_val, problem_type, num_labels))
+        y_pred = torch.Tensor(y_pred)
+        y_val = torch.tensor(y_val)
+
+        metrics.append(compute_metrics(y_pred, y_val, multi_label, num_labels))
 
     metrics_df = pd.DataFrame(metrics)
     cv_score = metrics_df.mean(axis=0)
@@ -186,10 +111,6 @@ classifiers = [
     GaussianNB(),
     RandomForestClassifier(n_estimators=1000, random_state=42),
 ]
-# clf = MultinomialNB()
-# clf = RandomForestClassifier(n_estimators=1000, random_state=42)
-# clf = RidgeClassifier()
-# clf = GaussianNB()
 
 for clf in classifiers:
     scores = pd.DataFrame()
