@@ -36,12 +36,21 @@ data_collator = DataCollatorForLanguageModeling(
 )
 
 training_args = TrainingArguments(
-    output_dir="./models/BabyBERTa_131022",
+    output_dir="./models/BabyBERTa_091122",
     overwrite_output_dir=True,
     num_train_epochs=10,
     per_device_train_batch_size=64,
+    do_train=True,
+    do_eval=False,
+    do_predict=False,
     save_steps=10_000,
     save_total_limit=2,
+    warmup_ratio=0.2
+    logging_strategy="steps",
+    logging_steps=100
+    logging_dir="roberta_logs",
+    report_to="tensorboard",
+    
 )
 
 trainer = Trainer(
@@ -52,4 +61,4 @@ trainer = Trainer(
 )
 trainer.train()
 
-trainer.save_model("./models/BabyBERTa_131022")
+trainer.save_model("./models/BabyBERTa_091122")
