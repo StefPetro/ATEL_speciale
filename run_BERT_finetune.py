@@ -159,7 +159,7 @@ for k in range(NUM_SPLITS):
                    +f'/CV_{k+1}'
     
     training_args = TrainingArguments(
-        output_dir=f'huggingface_saves/{TARGET}',
+        output_dir=f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}',  # [17:] removes 'huggingface_logs'
         save_strategy='epoch',
         save_total_limit=1,
         metric_for_best_model='f1_macro',  # f1-score for now
@@ -218,8 +218,8 @@ for k in range(NUM_SPLITS):
     # )
     
     ## Removes the saved checkpoints, as they take too much space
-    for f in os.listdir(f'huggingface_saves/{TARGET}'):
-        shutil.rmtree(os.path.join(f'huggingface_saves/{TARGET}', f))
+    # for f in os.listdir(f'huggingface_saves/{TARGET}'):
+    #     shutil.rmtree(os.path.join(f'huggingface_saves/{TARGET}', f))
         
     ## Last garbage collection
     del model
