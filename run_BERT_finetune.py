@@ -189,10 +189,33 @@ for k in range(NUM_SPLITS):
     
     trainer.train()
     
+    print('Evulate best model:')
     eval_dict = trainer.evaluate()
     with open(f'{logging_name}/best_eval_{TARGET}_CV{k+1}.yml', 'w') as outfile:
         yaml.dump(eval_dict, outfile, default_flow_style=False)
 
+
+    print('Make predictions:')
+    test_dataset = val_dataset.remove_columns("labels")
+    print(trainer.predict(test_dataset))
+
+    trainer.model.eval()
+    trainer.model.to('cpu')
+    outputs = trainer.model(
+        input_ids=torch.tensor(val_dataset["input_ids"]),
+        labels=torch.tensor(val_dataset["labels"]),
+        attention_mask=torch.tensor(val_dataset["attention_mask"])
+    )
+
+    torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
+    
+    print('Output metrics from model:')
+    print(
+        compute_metrics(
+            (torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]).to('cuda'))
+        )
+    )
+    
     ## Removes the saved checkpoints, as they take too much space
     for f in os.listdir(f'huggingface_saves/{TARGET}'):
         shutil.rmtree(os.path.join(f'huggingface_saves/{TARGET}', f))
