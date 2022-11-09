@@ -36,7 +36,7 @@ SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
 BATCH_ACCUMALATION = 4
-NUM_EPOCHS = 100
+NUM_EPOCHS = 1000
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY = 0.01
 set_seed(SEED)
@@ -187,22 +187,11 @@ for k in range(NUM_SPLITS):
 
     trainer.save_model("BEST-RoBERTa")
 
-    print("Evaluate:")
-    print(trainer.evaluate())
-
     trainer.model.eval()
     outputs = trainer.model(
         input_ids=torch.tensor(val_dataset["input_ids"]).to('cuda'),
         labels=torch.tensor(val_dataset["labels"]).to('cuda'),
         attention_mask=torch.tensor(val_dataset["attention_mask"]).to('cuda')
-    )
-
-    print(outputs)
-
-    print(
-        compute_metrics(
-            (torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]).to('cuda'))
-        )
     )
 
     torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
