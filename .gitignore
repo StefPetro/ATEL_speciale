@@ -7,6 +7,7 @@ models/
 *.err
 *.out
 *.flake8
+huggingface_saves/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
