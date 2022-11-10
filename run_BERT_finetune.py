@@ -198,7 +198,7 @@ for k in range(NUM_SPLITS):
     print('Make predictions:')
     test_dataset = val_dataset.remove_columns("labels")
     outputs = trainer.predict(test_dataset)
-    print(compute_metrics((outputs, val_dataset['labels'])))
+    print(compute_metrics((outputs.predictions, val_dataset['labels'])))
 
     # trainer.model.eval()
     # trainer.model.to('cpu')
