@@ -197,7 +197,7 @@ for k in range(NUM_SPLITS):
 
     print('Make predictions:')
     test_dataset = val_dataset.remove_columns("labels")
-    outputs = trainer.predict(test_dataset).predictions
+    outputs = trainer.predict(test_dataset)
     print(compute_metrics((outputs, val_dataset['labels'])))
 
     # trainer.model.eval()
@@ -208,7 +208,8 @@ for k in range(NUM_SPLITS):
     #     attention_mask=torch.tensor(val_dataset["attention_mask"])
     # )
 
-    torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
+    # torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
+    torch.save(outputs.predictions, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
     
     # print('Output metrics from model:')
     # print(
