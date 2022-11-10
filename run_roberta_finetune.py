@@ -1,26 +1,22 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import TrainingArguments, Trainer, TrainerCallback
-from transformers import AdamW, get_linear_schedule_with_warmup
-from datasets import Dataset
-from torchmetrics.functional.classification import multilabel_exact_match
-from torchmetrics.functional.classification import (
-    multilabel_accuracy,
-    multilabel_f1_score,
-)
-from torchmetrics.functional.classification import (
-    multiclass_accuracy,
-    multiclass_f1_score,
-)
-from sklearn.model_selection import KFold
-from data_clean import *
-from atel.data import BookCollection
 import argparse
-import yaml
-from yaml import CLoader
 import os
-import torch
-from transformers import RobertaTokenizer
 import shutil
+
+import torch
+import yaml
+from datasets import Dataset
+from sklearn.model_selection import KFold
+from torchmetrics.functional.classification import (multiclass_accuracy,
+                                                    multiclass_f1_score,
+                                                    multilabel_accuracy,
+                                                    multilabel_exact_match,
+                                                    multilabel_f1_score)
+from transformers import (AutoModelForSequenceClassification, RobertaTokenizer,
+                          Trainer, TrainingArguments)
+from yaml import CLoader
+
+from atel.data import BookCollection
+from data_clean import *
 
 parser = argparse.ArgumentParser(
     description="Arguments for running the BERT finetuning"
@@ -36,7 +32,7 @@ SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
 BATCH_ACCUMALATION = 4
-NUM_EPOCHS = 1000
+NUM_EPOCHS = 500
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY = 0.01
 set_seed(SEED)
@@ -128,19 +124,12 @@ for k in range(NUM_SPLITS):
     val_dataset = token_dataset.select(val_idx)
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "models/BabyBERTa_241022",
+        "models/BabyBERTa_091122",
         num_labels=NUM_LABELS,
         problem_type=p_t,
         label2id=label2id,
         id2label=id2label,
     )
-
-    # optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
-    # lr_scheduler = get_linear_schedule_with_warmup(
-    #     optimizer = optimizer,
-    #     num_warmup_steps=0,
-    #     num_training_steps=100
-    # )
 
     logging_name = (
         f"huggingface_logs"
@@ -150,12 +139,12 @@ for k in range(NUM_SPLITS):
         + f"-ep{NUM_EPOCHS}"
         + f"-seed{SEED}"
         + f"-WD{WEIGHT_DECAY}"
-        + f"-LR{LEARNING_RATE}"
+        + f"-LR{LEARNING_RATE}-091122"
         + f"/CV_{k+1}"
     )
 
     training_args = TrainingArguments(
-        output_dir=f"huggingface_saves/{TARGET}",
+        output_dir=f"huggingface_saves_091122/{TARGET}",
         save_strategy="epoch",
         save_total_limit=1,
         metric_for_best_model="eval_f1_macro",  # f1-score for now
@@ -185,7 +174,7 @@ for k in range(NUM_SPLITS):
 
     trainer.train()
 
-    trainer.save_model("BEST-RoBERTa")
+    trainer.save_model("models/BEST-RoBERTa-091122")
 
     trainer.model.eval()
     outputs = trainer.model(
