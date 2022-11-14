@@ -4,6 +4,6 @@ eval_accuracy_exact: 0.39743590354919434
 eval_accuracy_macro: 0.9418803453445435
 eval_f1_macro: 0.22817793488502502
 eval_loss: 0.19279907643795013
-eval_runtime: 0.863
-eval_samples_per_second: 90.382
-eval_steps_per_second: 5.794
+eval_runtime: 0.8449
+eval_samples_per_second: 92.314
+eval_steps_per_second: 5.918

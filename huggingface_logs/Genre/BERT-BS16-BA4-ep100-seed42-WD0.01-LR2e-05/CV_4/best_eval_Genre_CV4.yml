@@ -1,9 +1,9 @@
 epoch: 100.0
-eval_AUROC_macro: 0.7017644643783569
-eval_accuracy_exact: 0.3461538553237915
-eval_accuracy_macro: 0.9307692646980286
-eval_f1_macro: 0.2288665473461151
-eval_loss: 0.22065132856369019
-eval_runtime: 0.8648
-eval_samples_per_second: 90.193
-eval_steps_per_second: 5.782
+eval_AUROC_macro: 0.7196500897407532
+eval_accuracy_exact: 0.3333333432674408
+eval_accuracy_macro: 0.9341881275177002
+eval_f1_macro: 0.22598294913768768
+eval_loss: 0.2237613946199417
+eval_runtime: 0.8404
+eval_samples_per_second: 92.81
+eval_steps_per_second: 5.949
