@@ -49,7 +49,7 @@ for t in target_cols:
         # )
 
         # For HuggingFace
-        preds_dir = glob.glob(f"./huggingface_logs/{t}/*/CV_{k+1}/*.pt")
+        preds_dir = glob.glob(f"./huggingface_logs/{t}/*-241022/CV_{k+1}/*.pt")
 
         assert len(preds_dir) == 1, "There must only be 1 set of predictions"
 
