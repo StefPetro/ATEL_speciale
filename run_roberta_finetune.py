@@ -124,7 +124,7 @@ for k in range(NUM_SPLITS):
     val_dataset = token_dataset.select(val_idx)
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "models/BabyBERTa_241022",
+        "models/BabyBERTa_091122",
         num_labels=NUM_LABELS,
         problem_type=p_t,
         label2id=label2id,
@@ -139,12 +139,12 @@ for k in range(NUM_SPLITS):
         + f"-ep{NUM_EPOCHS}"
         + f"-seed{SEED}"
         + f"-WD{WEIGHT_DECAY}"
-        + f"-LR{LEARNING_RATE}-241022"
+        + f"-LR{LEARNING_RATE}-091122"
         + f"/CV_{k+1}"
     )
 
     training_args = TrainingArguments(
-        output_dir=f"huggingface_saves_241022/{TARGET}",
+        output_dir=f"huggingface_saves_091122/{TARGET}",
         save_strategy="epoch",
         save_total_limit=1,
         metric_for_best_model="eval_f1_macro",  # f1-score for now
@@ -174,7 +174,7 @@ for k in range(NUM_SPLITS):
 
     trainer.train()
 
-    trainer.save_model(f"models/BEST-RoBERTa-241022_{TARGET}")
+    trainer.save_model(f"models/BEST-RoBERTa-091122_{TARGET}")
 
     trainer.model.eval()
     outputs = trainer.model(
