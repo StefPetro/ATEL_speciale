@@ -98,12 +98,12 @@ X = tfidfvectorizer.fit_transform(documents).toarray()
 
 target_cols = [
     "Genre",
-    "Perspektiv",
     "Tekstbånd",
     "Fremstillingsform",
     "Semantisk univers",
-    "Holistisk vurdering",
     "Stemmer",
+    "Perspektiv",
+    "Holistisk vurdering",
 ]
 
 classifiers = [
