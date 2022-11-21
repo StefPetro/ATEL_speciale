@@ -11,7 +11,7 @@ from transformers import (
 
 config = RobertaConfig(
     vocab_size=5_000,
-    max_position_embeddings=514,
+    max_position_embeddings=130,
     hidden_size=256,
     intermediate_size=1024,
     num_attention_heads=8,
@@ -20,7 +20,7 @@ config = RobertaConfig(
 )
 
 tokenizer = RobertaTokenizer.from_pretrained(
-    "./tokenizers/BPEtokenizer_121022", max_length=512
+    "./tokenizers/BPEtokenizer_121022", max_length=128
 )
 
 model = RobertaForMaskedLM(config=config).cuda()
@@ -45,7 +45,7 @@ training_args = TrainingArguments(
     do_predict=False,
     save_steps=10_000,
     save_total_limit=2,
-    warmup_ratio=0.2,
+    warmup_ratio=0.2, # WARMUP
     logging_strategy="steps",
     logging_steps=100,
     logging_dir="roberta_logs",
