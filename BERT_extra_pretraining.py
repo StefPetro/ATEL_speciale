@@ -8,9 +8,9 @@ from transformers import (
 )
 from datasets import load_dataset
 
-tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
+tokenizer = AutoTokenizer.from_pretrained('Maltehb/danish-bert-botxo')
 
-model = AutoModelForMaskedLM()
+model = AutoModelForMaskedLM.from_pretrained('Maltehb/danish-bert-botxo')
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
