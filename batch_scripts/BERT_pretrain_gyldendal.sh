@@ -23,8 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o lstm_tester.out
-#BSUB -e lstm_tester.err
+#BSUB -oo ./out_files/BERT_pretrain.out
+#BSUB -eo ./out_files/BERT_pretrain.err
 
 # here follow the commands you want to execute 
 
