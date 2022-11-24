@@ -16,7 +16,7 @@ def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
 
 
-data = load_dataset("text", data_files='data/book_test.txt', sample_by='line')
+data = load_dataset("text", data_files='data/gyldendalbooks.txt', sample_by='line')
 dataset = data.map(tokenize_function, batched=True)
 
 data_collator = DataCollatorForLanguageModeling(
