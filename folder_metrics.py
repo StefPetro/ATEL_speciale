@@ -44,15 +44,18 @@ for t in target_cols:
         target = y[val]
 
         # # For LSTM
-        preds_dir = glob.glob(
-            f"./lightning_logs/{t.replace(' ', '_')}/*/bs_64/CV_{k+1}/*.pt"
-        )
+        # preds_dir = glob.glob(
+        #     f"./lightning_logs/{t.replace(' ', '_')}/*/bs_64/CV_{k+1}/*.pt"
+        # )
 
-        # For BERT
+        # # For BERT
         # preds_dir = glob.glob(f"./bert_logs/{t.replace(' ', '_')}/*/CV_{k+1}/*.pt")
 
-        # For BørneBÆRTa
+        # # For BørneBÆRTa with warmup
         # preds_dir = glob.glob(f"./warmup_logs/{t}/*/CV_{k+1}/*.pt")
+
+        # For BørneBÆRTa without warmup
+        preds_dir = glob.glob(f"./no_warmup_logs/{t}/*/CV_{k+1}/*.pt")
 
         assert len(preds_dir) == 1, "There must only be 1 set of predictions"
 
@@ -80,12 +83,18 @@ for t in target_cols:
     SEMs[t] = sem
 
 print(
-    ((scores * 100).round(1)).astype(str)
+    (((scores * 100).round(1)).astype(str)
     + " \pm "
-    + ((SEMs * 100).round(1)).astype(str)
+    + ((SEMs * 100).round(1)).astype(str)).T
 )
+# print(
+#     (scores.mean(axis=1) * 100).round(1).astype(str)
+#     + " \pm "
+#     + (SEMs.mean(axis=1) * 100).round(1).astype(str)
+# )
+
 print(
-    (scores.mean(axis=1) * 100).round(1).astype(str)
+    (scores * 100).round(1).mean(axis=1).round(1).astype(str)
     + " \pm "
-    + (SEMs.mean(axis=1) * 100).round(1).astype(str)
+    + (SEMs * 100).round(1).mean(axis=1).round(1).astype(str)
 )
