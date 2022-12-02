@@ -157,7 +157,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
                     +f'-seed{SEED}'\
                     +f'-WD{WEIGHT_DECAY}'\
                     +f'-LR{LEARNING_RATE}'\
-                    +f'/CV_{k+1}'\
+                    +f'/CV_{CV+1}'\
                     +f'/num_samples_{labeled_ds.num_rows}'
 
     # Using max_steps instead of train_epoch since we want all experiment to train for the same
@@ -294,7 +294,7 @@ filepath = f'huggingface_logs'\
             +f'-seed{SEED}'\
             +f'-WD{WEIGHT_DECAY}'\
             +f'-LR{LEARNING_RATE}'\
-            +f'/CV_{k+1}'
+            +f'/CV_{CV+1}'
             
 with open(f'{filepath}/.json', 'w') as outfile:
     outfile.write(json.dumps(all_test_logits))
