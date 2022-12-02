@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import TrainingArguments, Trainer, TrainerCallback
+from transformers import TrainingArguments, Trainer
 from torchmetrics.functional.classification import multilabel_exact_match
 from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
 from torchmetrics.functional.classification import multilabel_recall, multilabel_precision
@@ -295,8 +295,6 @@ filepath = f'huggingface_logs'\
             +f'-WD{WEIGHT_DECAY}'\
             +f'-LR{LEARNING_RATE}'\
             +f'/CV_{CV+1}'
-            
+    
 with open(f'{filepath}/.json', 'w') as outfile:
     outfile.write(json.dumps(all_test_logits))
-
-
