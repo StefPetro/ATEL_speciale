@@ -8,34 +8,41 @@ from torchmetrics.functional.classification import multilabel_recall, multilabel
 from torchmetrics.functional.classification import multiclass_accuracy, multiclass_f1_score
 from torchmetrics.functional.classification import multiclass_recall, multiclass_precision
 from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
-from datasets import Dataset
+from datasets import Dataset, concatenate_datasets
 from sklearn.model_selection import KFold
 from scipy.stats import entropy
 from atel.data import BookCollection
 from data_clean import *
 from acquisition_functions import *
 import argparse
-import math  
+import json
 import yaml
 from yaml import CLoader
 import os
 import shutil
 
-# parser = argparse.ArgumentParser(description='Arguments for running the BERT finetuning')
-# parser.add_argument(
-#     '--target_col',
-#     help='The target column to train the BERT model on.', 
-#     default=None
-# )
-# args = parser.parse_args()
+parser = argparse.ArgumentParser(description='Arguments for running the BERT finetuning')
+parser.add_argument(
+    '--target_col',
+    help='The target column to train the BERT model on.', 
+    default=None
+)
+parser.add_argument(
+    '--cv',
+    help='Which cross-validation fold to use. Can be 1-10',
+    default=1,
+    type=int
+)
+args = parser.parse_args()
 
-TARGET = 'Semantisk univers'  # args.target_col
+TARGET = args.target_col
+CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
 
 SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
 BATCH_ACCUMALATION = 2
-NUM_EPOCHS = 100
+NUM_EPOCHS = 1
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY  = 0.01
 set_seed(SEED)
@@ -132,7 +139,7 @@ kf = KFold(n_splits=NUM_SPLITS, shuffle=True, random_state=SEED)
 all_splits = [k for k in kf.split(token_dataset)]
 
 
-def AL_train(labelled_ds: Dataset, unlabelled_ds: Dataset, test_ds: Dataset):    
+def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):    
     
     model = AutoModelForSequenceClassification.from_pretrained("Maltehb/danish-bert-botxo", 
                                                                num_labels=NUM_LABELS, 
@@ -151,7 +158,7 @@ def AL_train(labelled_ds: Dataset, unlabelled_ds: Dataset, test_ds: Dataset):
                     +f'-WD{WEIGHT_DECAY}'\
                     +f'-LR{LEARNING_RATE}'\
                     +f'/CV_{k+1}'\
-                    +f'/num_samples_{labelled_ds.num_rows}'
+                    +f'/num_samples_{labeled_ds.num_rows}'
 
     # Using max_steps instead of train_epoch since we want all experiment to train for the same
     # number of itterations.
@@ -161,10 +168,11 @@ def AL_train(labelled_ds: Dataset, unlabelled_ds: Dataset, test_ds: Dataset):
     training_args = TrainingArguments(
             # [17:] removes 'huggingface_logs'
             output_dir=f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}',
+            save_strategy='epoch',
             save_total_limit=1,
-            # metric_for_best_model='f1_macro',  # f1-score for now
-            # greater_is_better=True,
-            # load_best_model_at_end=True,
+            metric_for_best_model='f1_macro',  # f1-score for now
+            greater_is_better=True,
+            load_best_model_at_end=True,
             logging_strategy='epoch',
             logging_dir=logging_name,
             report_to='tensorboard',
@@ -183,7 +191,7 @@ def AL_train(labelled_ds: Dataset, unlabelled_ds: Dataset, test_ds: Dataset):
     trainer = Trainer(
         model=model,    
         args=training_args,
-        train_dataset=labelled_ds,
+        train_dataset=labeled_ds,
         eval_dataset=test_ds,
         compute_metrics=compute_metrics,
         tokenizer=tokenizer
@@ -191,74 +199,104 @@ def AL_train(labelled_ds: Dataset, unlabelled_ds: Dataset, test_ds: Dataset):
     
     trainer.train()  # resume_from_checkpoint=True
     
-    eval_ds      = unlabelled_ds.remove_columns("labels")
-    eval_logits  = trainer.predict(eval_ds)
+    test1 = unlabeled_ds.select([])
+    logi = trainer.predict(test1).predictions
+    
+    eval_ds      = unlabeled_ds.remove_columns("labels")
+    eval_logits  = trainer.predict(eval_ds).predictions
     
     test_ds      = test_ds.remove_columns("labels")
-    test_logits  = trainer.predict(test_ds)
+    test_logits  = trainer.predict(test_ds).predictions
     
     return eval_logits, test_logits
 
 
-
-for k in range(NUM_SPLITS):
-    all_test_logits = {
-        'num_train_samples': [],
-        'logits': []
-    }
-    train_idx, val_idx = all_splits[k]
-    train_dataset = token_dataset.select(train_idx)
-    val_dataset   = token_dataset.select(val_idx)
-
-    # ds = train_dataset.train_test_split(train_size=0.2)
-    
-    labelled_ds   = train_dataset.select(  # Choose random subset of data
-        np.random.choice(len(train_dataset), int(len(train_dataset)*0.2), replace=False)
+def create_initial_labeled_dataset(full_ds: Dataset, init_size: float=0.2) -> Dataset:
+    total_size   = full_ds.num_rows
+    labeled_ds   = full_ds.select(  # Choose random subset of data
+        np.random.choice(total_size, int(total_size*init_size), replace=False)
     )
 
-    unlabelled_ds = train_dataset.filter(  # filter index for data not in training set
-        lambda x: x['index'] not in labelled_ds['index']
+    unlabeled_ds = train_dataset.filter(  # filter index for data not in training set
+        lambda x: x['index'] not in labeled_ds['index']
     )
-
-    eval_logits, test_logits = AL_train(labelled_ds, unlabelled_ds, val_dataset)
-
-    # Loop through the "unlabelled" data until we are training on the whole set
-    ##  Start dataset size: 700*0.2  = 140
-    ##  560 samples//32 batch size (+ 1 if not even) = 18 steps
     
-    # N = math.ceil(unlabelled_ds.num_rows / (BATCH_SIZE*BATCH_ACCUMALATION))
-    for c in range(18):
-        
-        eval_logits
-        
-        all_test_logits['num_train_samples'].append(labelled_ds.num_rows)
-        all_test_logits['logits'].append(test_logits)
-        
-        
-        labelled_ds   = train_dataset.select(  # Choose random subset of data
-            None  # TODO: Fill with topk indices
-        )
-
-        unlabelled_ds = train_dataset.filter(  # filter index for data not in training set
-            lambda x: x['index'] not in labelled_ds['index']
-        )
-        
-        eval_logits, test_logits = AL_train(labelled_ds, unlabelled_ds, val_dataset)
-        break
+    return labeled_ds, unlabeled_ds
     
-    all_test_logits['num_train_samples'].append(labelled_ds.num_rows)
+
+def update_datasets(
+    labeled_ds:   Dataset, 
+    unlabeled_ds: Dataset,
+    eval_logits,
+    problem_type: str='multi_label',
+    aq_size:      int=32,
+    aq_func=calc_entropy
+) -> Tuple[Dataset, Dataset]:
+
+    entropy     = aq_func(eval_logits, problem_type=problem_type)
+    top_samples = torch.topk(entropy,
+                             aq_size if unlabeled_ds.num_rows >= aq_size else unlabeled_ds.num_rows)
+    
+        
+    # Usually you would have an oracle that would label the unlabaled data points.
+    # In this case we already know the labels.
+    new_train_samples = unlabeled_ds.select(top_samples.indices.tolist())
+    # new_train_samples = ask_oracle(new_train_samples)
+
+    labeled_ds = concatenate_datasets([labeled_ds, new_train_samples])
+    
+    unlabeled_ds = train_dataset.filter(  # filter index for data not in training set
+        lambda x: x['index'] not in labeled_ds['index']
+    )
+        
+    return labeled_ds, unlabeled_ds
+        
+
+all_test_logits = {
+    'num_train_samples': [],
+    'logits': []
+}
+train_idx, val_idx = all_splits[CV]
+train_dataset = token_dataset.select(train_idx)
+val_dataset   = token_dataset.select(val_idx)
+
+# ds = train_dataset.train_test_split(train_size=0.2)
+
+unlabeled_ds = token_dataset.select(train_idx)
+
+while unlabeled_ds.num_rows > 0:
+    
+    if unlabeled_ds.num_rows == train_dataset.num_rows:
+        labeled_ds, unlabeled_ds = create_initial_labeled_dataset(train_dataset, init_size=0.2)
+    else:
+        labeled_ds, unlabeled_ds = update_datasets(
+            labeled_ds, 
+            unlabeled_ds, 
+            eval_logits, 
+            problem_type=problem_type,
+            aq_size=32,
+            aq_func=calc_entropy
+        )        
+    
+    eval_logits, test_logits = AL_train(labeled_ds, unlabeled_ds, val_dataset)
+    
+    all_test_logits['num_train_samples'].append(labeled_ds.num_rows)
     all_test_logits['logits'].append(test_logits)
-    
-    all_test_logits
-    
-    break
-    
-pk = torch.tensor([0.5, 0., 0.5])
-print(calc_entropy(pk))
 
-print(entropy(pk, base=2))
-
-
-
+# Save the test logits for future analysis
+filepath = f'huggingface_logs'\
+            +f'/active_learning'\
+            +f'/BERT'\
+            +f'/{TARGET.replace(" ", "_")}'\
+            +f'/BS{BATCH_SIZE}'\
+            +f'-BA{BATCH_ACCUMALATION}'\
+            +f'-ep{NUM_EPOCHS}'\
+            +f'-seed{SEED}'\
+            +f'-WD{WEIGHT_DECAY}'\
+            +f'-LR{LEARNING_RATE}'\
+            +f'/CV_{k+1}'
+            
+with open(f'{filepath}/.json', 'w') as outfile:
+    outfile.write(json.dumps(all_test_logits))
 
 
