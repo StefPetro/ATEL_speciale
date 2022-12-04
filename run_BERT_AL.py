@@ -229,7 +229,7 @@ def update_datasets(
     labeled_ds:   Dataset, 
     unlabeled_ds: Dataset,
     eval_logits,
-    problem_type: str='multi_label',
+    problem_type: str='multilabel',
     aq_size:      int=32,
     aq_func=calc_entropy
 ) -> Tuple[Dataset, Dataset]:
@@ -279,7 +279,7 @@ while unlabeled_ds.num_rows > 0:
             aq_func=calc_entropy
         )
     
-    print(f'Labeled dataset size: {labeled_ds}/{train_dataset.num_rows}')
+    print(f'Labeled dataset size: {labeled_ds.num_rows}/{train_dataset.num_rows}')
     
     eval_logits, test_logits = AL_train(labeled_ds, unlabeled_ds, val_dataset)
     

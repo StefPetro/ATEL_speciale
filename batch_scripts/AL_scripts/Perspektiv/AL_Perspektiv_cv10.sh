@@ -4,7 +4,7 @@
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
-#BSUB -J LSTM_Perspektiv
+#BSUB -J AL_Perspektiv_10
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 4
 ### -- specify that the cores must be on the same host -- 
@@ -23,9 +23,8 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -oo ./out_files/LSTM/LSTM_Perspektiv.out
-#BSUB -eo ./out_files/LSTM/LSTM_Perspektiv.err
-
+#BSUB -oo ./out_files/AL/AL_Perspektiv.out
+#BSUB -eo ./out_files/AL/AL_Perspektiv.err
 # here follow the commands you want to execute 
 
 # Load dependencies
