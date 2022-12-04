@@ -150,6 +150,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
                     +f'/BERT'\
+                    +f'/entropy'\
                     +f'/{TARGET.replace(" ", "_")}'\
                     +f'/BS{BATCH_SIZE}'\
                     +f'-BA{BATCH_ACCUMALATION}'\
@@ -276,7 +277,9 @@ while unlabeled_ds.num_rows > 0:
             problem_type=problem_type,
             aq_size=32,
             aq_func=calc_entropy
-        )        
+        )
+    
+    print(f'Labeled dataset size: {labeled_ds}/{train_dataset.num_rows}')
     
     eval_logits, test_logits = AL_train(labeled_ds, unlabeled_ds, val_dataset)
     
@@ -287,6 +290,7 @@ while unlabeled_ds.num_rows > 0:
 filepath = f'huggingface_logs'\
             +f'/active_learning'\
             +f'/BERT'\
+            +f'/entropy'\
             +f'/{TARGET.replace(" ", "_")}'\
             +f'/BS{BATCH_SIZE}'\
             +f'-BA{BATCH_ACCUMALATION}'\
@@ -296,5 +300,5 @@ filepath = f'huggingface_logs'\
             +f'-LR{LEARNING_RATE}'\
             +f'/CV_{CV+1}'
     
-with open(f'{filepath}/.json', 'w') as outfile:
+with open(f'{filepath}/test_logits.json', 'w') as outfile:
     outfile.write(json.dumps(all_test_logits))
