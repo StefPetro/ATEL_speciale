@@ -42,7 +42,7 @@ SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
 BATCH_ACCUMALATION = 2
-NUM_EPOCHS = 1
+NUM_EPOCHS = 100
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY  = 0.01
 set_seed(SEED)
@@ -284,7 +284,7 @@ while unlabeled_ds.num_rows > 0:
     eval_logits, test_logits = AL_train(labeled_ds, unlabeled_ds, val_dataset)
     
     all_test_logits['num_train_samples'].append(labeled_ds.num_rows)
-    all_test_logits['logits'].append(test_logits)
+    all_test_logits['logits'].append(test_logits.tolist())
 
 # Save the test logits for future analysis
 filepath = f'huggingface_logs'\
