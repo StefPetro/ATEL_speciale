@@ -41,7 +41,7 @@ CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
 SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
-BATCH_ACCUMALATION = 2
+BATCH_ACCUMALATION = 4
 NUM_EPOCHS = 100
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY  = 0.01
@@ -146,7 +146,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
                                                                problem_type=p_t,
                                                                label2id=label2id,
                                                                id2label=id2label)
-    
+    # +f'-ep{NUM_EPOCHS}'\
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
                     +f'/BERT'\
@@ -154,7 +154,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
                     +f'/{TARGET.replace(" ", "_")}'\
                     +f'/BS{BATCH_SIZE}'\
                     +f'-BA{BATCH_ACCUMALATION}'\
-                    +f'-ep{NUM_EPOCHS}'\
+                    +f'-MS{4375}'\
                     +f'-seed{SEED}'\
                     +f'-WD{WEIGHT_DECAY}'\
                     +f'-LR{LEARNING_RATE}'\
@@ -163,28 +163,30 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
 
     # Using max_steps instead of train_epoch since we want all experiment to train for the same
     # number of itterations.
-    ## (700 samples / 32 batch size) * 5 epochs = 110 steps
-    ## (700 samples / 16 batch size) * 5 epochs = 219 steps
+    ## (700 samples / 32 batch size) * 100 epochs = 2187.5 steps
+    ## (700 samples / 16 batch size) * 100 epochs = 4375 steps
     
     training_args = TrainingArguments(
             # [17:] removes 'huggingface_logs'
             output_dir=f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}',
-            save_strategy='epoch',
+            save_strategy='steps',
+            save_steps=43,
             save_total_limit=1,
             metric_for_best_model='f1_macro',  # f1-score for now
             greater_is_better=True,
             load_best_model_at_end=True,
-            logging_strategy='epoch',
+            logging_strategy='steps',
+            logging_steps=43,
             logging_dir=logging_name,
             report_to='tensorboard',
-            evaluation_strategy='epoch',
-            # eval_steps=10,
+            evaluation_strategy='steps',  # 'epoch'
+            eval_steps=43,
             seed=SEED,
             per_device_train_batch_size=BATCH_SIZE,
             per_device_eval_batch_size=BATCH_SIZE,
             gradient_accumulation_steps=BATCH_ACCUMALATION,
-            num_train_epochs=NUM_EPOCHS,
-            # max_steps=110,  # If using max_steps switch strategies to steps
+            # num_train_epochs=NUM_EPOCHS,
+            max_steps=4375,  # If using max_steps switch strategies to steps
             learning_rate=LEARNING_RATE,
             weight_decay=WEIGHT_DECAY
         )
@@ -287,6 +289,7 @@ while unlabeled_ds.num_rows > 0:
     all_test_logits['logits'].append(test_logits.tolist())
 
 # Save the test logits for future analysis
+# +f'-ep{NUM_EPOCHS}'\
 filepath = f'huggingface_logs'\
             +f'/active_learning'\
             +f'/BERT'\
@@ -294,7 +297,7 @@ filepath = f'huggingface_logs'\
             +f'/{TARGET.replace(" ", "_")}'\
             +f'/BS{BATCH_SIZE}'\
             +f'-BA{BATCH_ACCUMALATION}'\
-            +f'-ep{NUM_EPOCHS}'\
+            +f'-MS{4375}'\
             +f'-seed{SEED}'\
             +f'-WD{WEIGHT_DECAY}'\
             +f'-LR{LEARNING_RATE}'\
