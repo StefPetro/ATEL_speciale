@@ -117,5 +117,5 @@ for l in logits:
 
 print(y)
 print('Plotting')
-plt.plot(num_samples, y)
+plt.plot(num_samples, y, marker='o')
 plt.show()
