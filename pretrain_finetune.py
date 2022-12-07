@@ -7,36 +7,22 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
-import glob
 from tqdm import tqdm
-import os
+from datasets import load_from_disk
+
+# with open('tokenized_gw_linebyline2.pkl', 'rb') as handle:
+#     dataset = pickle.load(handle)
+
+#dataset = pickle.load(open('tokenized_gw_linebyline2.pkl','rb'))
+
+import sys
+sys.setrecursionlimit(1000000)
+
+dataset = load_from_disk("tokenized_gw.hf")
 
 tokenizer = RobertaTokenizer.from_pretrained(
     "./tokenizers/BPEtokenizer_121022", max_length=128
 )
-
-all_files = glob.glob("./data/dagw/sektioner/*/*")
-
-for idx, f in enumerate(tqdm(all_files)):
-    # check if file is empty:
-    if os.stat(f).st_size == 0:
-        continue
-    
-    if idx == 0:
-        dataset = LineByLineTextDataset(
-        tokenizer=tokenizer,
-        file_path=f,
-        block_size=128,
-        )
-    else:
-        d = LineByLineTextDataset(
-        tokenizer=tokenizer,
-        file_path=f,
-        block_size=128,
-        )
-        
-        dataset += d
-
 
 config = RobertaConfig(
     vocab_size=5_000,
@@ -57,8 +43,8 @@ data_collator = DataCollatorForLanguageModeling(
 training_args = TrainingArguments(
     output_dir="./models/RoBERTa_with_warmup_211122",
     overwrite_output_dir=True,
-    num_train_epochs=12,
-    per_device_train_batch_size=64,
+    num_train_epochs=10,
+    per_device_train_batch_size=512,
     do_train=True,
     do_eval=False,
     do_predict=False,
@@ -76,8 +62,9 @@ trainer = Trainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
-    train_dataset=dataset,
+    train_dataset=dataset['train'],
 )
-trainer.train()
+trainer.train(resume_from_checkpoint = True)
 
 trainer.save_model("./models/BabyBERTa_131022_GW")
+
