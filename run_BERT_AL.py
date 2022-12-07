@@ -42,7 +42,7 @@ SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
 BATCH_ACCUMALATION = 4
-NUM_EPOCHS = 100
+NUM_EPOCHS = 75
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY  = 0.01
 set_seed(SEED)
@@ -165,6 +165,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     # number of itterations.
     ## (700 samples / 32 batch size) * 100 epochs = 2187.5 steps
     ## (700 samples / 16 batch size) * 100 epochs = 4375 steps
+    ## (700 samples / 16 batch size) * 75 epochs = 3281.25 steps
     
     training_args = TrainingArguments(
             # [17:] removes 'huggingface_logs'
@@ -186,7 +187,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
             per_device_eval_batch_size=BATCH_SIZE,
             gradient_accumulation_steps=BATCH_ACCUMALATION,
             # num_train_epochs=NUM_EPOCHS,
-            max_steps=4375,  # If using max_steps switch strategies to steps
+            max_steps=3.281,  # If using max_steps switch strategies to steps
             learning_rate=LEARNING_RATE,
             weight_decay=WEIGHT_DECAY
         )
@@ -270,7 +271,7 @@ unlabeled_ds = token_dataset.select(train_idx)
 while unlabeled_ds.num_rows > 0:
     
     if unlabeled_ds.num_rows == train_dataset.num_rows:
-        labeled_ds, unlabeled_ds = create_initial_labeled_dataset(train_dataset, init_size=0.2)
+        labeled_ds, unlabeled_ds = create_initial_labeled_dataset(train_dataset, init_size=0.5)
     else:
         labeled_ds, unlabeled_ds = update_datasets(
             labeled_ds, 
