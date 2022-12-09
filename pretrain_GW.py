@@ -2,18 +2,11 @@ from transformers import (
     RobertaConfig,
     RobertaTokenizer,
     RobertaForMaskedLM,
-    LineByLineTextDataset,
     DataCollatorForLanguageModeling,
     Trainer,
     TrainingArguments,
 )
-from tqdm import tqdm
 from datasets import load_from_disk
-
-# with open('tokenized_gw_linebyline2.pkl', 'rb') as handle:
-#     dataset = pickle.load(handle)
-
-#dataset = pickle.load(open('tokenized_gw_linebyline2.pkl','rb'))
 
 import sys
 sys.setrecursionlimit(1000000)
@@ -34,17 +27,17 @@ config = RobertaConfig(
     type_vocab_size=1,
 )
 
-model = RobertaForMaskedLM.from_pretrained("./models/BabyBERTa_091122").cuda()
+model = RobertaForMaskedLM(config=config).cuda()
 
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer, mlm=True, mlm_probability=0.15
 )
 
 training_args = TrainingArguments(
-    output_dir="./models/BabyBERTa_091122_GW",
+    output_dir="./models/RoBERTa-GWstart-warmup",
     overwrite_output_dir=True,
-    num_train_epochs=5,
-    per_device_train_batch_size=64, #512,
+    num_train_epochs=10,
+    per_device_train_batch_size=64,
     do_train=True,
     do_eval=False,
     do_predict=False,
@@ -53,7 +46,7 @@ training_args = TrainingArguments(
     # warmup_ratio=0.2, # WARMUP
     logging_strategy="steps",
     logging_steps=100,
-    logging_dir="roberta_logs_gw",
+    logging_dir="roberta_logs",
     report_to="tensorboard",
     
 )
@@ -64,7 +57,6 @@ trainer = Trainer(
     data_collator=data_collator,
     train_dataset=dataset['train'],
 )
-trainer.train()
+trainer.train(resume_from_checkpoint = True)
 
-trainer.save_model("./models/BabyBERTa_091122_GW")
-
+trainer.save_model("./models/BabyBERTa-GWstart-warmup")
