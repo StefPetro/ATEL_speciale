@@ -46,10 +46,9 @@ class lstm_text(pl.LightningModule):
         
         self.save_hyperparameters()
         
-        self.best_model_logits = None
-        self.best_f1 = 0
-        self.best_epoch = 0
-        self.epoch = 0
+        # self.best_model_logits = None
+        # self.best_epoch = 0
+        # self.epoch = 0
         
         self.lstm = nn.LSTM(input_size    = self.n_features,
                             hidden_size   = self.hidden_size,
@@ -170,14 +169,15 @@ class lstm_text(pl.LightningModule):
         metrics = self.compute_metrics(all_preds, y, self.logit_func, self.multi_label, 'val_epoch')
         self.log_dict(metrics)
         
-        if metrics['val_epoch_f1_macro'] > self.best_f1:
-            self.best_model_logits = all_preds
-            self.best_f1 = metrics['val_epoch_f1_macro']
-            self.best_epoch = self.epoch
-        
-        self.epoch += 1
+        # self.best_model_logits = all_preds
+        # self.best_epoch = self.epoch
+        # self.epoch += 1
         # acc = torch.stack([out['acc'] for out in outputs]).mean()
         # self.log("avg_val_acc", acc)
+    
+    def predict_step(self, batch, batch_idx: int, dataloader_idx: int = 0):
+        # batch is a list of: [inputs, targets]
+        return self(batch[0])
 
 
 class lstm_data(pl.LightningDataModule):
@@ -235,3 +235,6 @@ class lstm_data(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(self.val_data, batch_size=self.batch_size)
 
+
+    def predict_dataloader(self):
+        return DataLoader(self.val_data, batch_size=self.batch_size)

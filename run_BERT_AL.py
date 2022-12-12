@@ -187,7 +187,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
             per_device_eval_batch_size=BATCH_SIZE,
             gradient_accumulation_steps=BATCH_ACCUMALATION,
             # num_train_epochs=NUM_EPOCHS,
-            max_steps=3.281,  # If using max_steps switch strategies to steps
+            max_steps=3281,  # If using max_steps switch strategies to steps
             learning_rate=LEARNING_RATE,
             weight_decay=WEIGHT_DECAY
         )
@@ -202,9 +202,6 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     )
     
     trainer.train()  # resume_from_checkpoint=True
-    
-    test1 = unlabeled_ds.select([])
-    logi = trainer.predict(test1).predictions
     
     eval_ds      = unlabeled_ds.remove_columns("labels")
     eval_logits  = trainer.predict(eval_ds).predictions

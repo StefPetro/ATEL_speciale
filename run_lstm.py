@@ -100,7 +100,12 @@ trainer = Trainer(
 trainer.fit(model, data)
 print('Done Training!')
 
-best_epoch = model.best_epoch
-best_preds = model.best_model_logits
-torch.save(best_preds, f'lightning_logs/{logger_name}/{TARGET}_best_epoch_{best_epoch}.pt')
-print('Saved model logits for best F1-score')
+# best_epoch = model.best_epoch
+# best_preds = model.best_model_logits
+# torch.save(best_preds, f'lightning_logs/{logger_name}/{TARGET}_last_epoch_{best_epoch}.pt')
+
+preds = trainer.predict(model, data)
+preds = torch.concat(preds)
+torch.save(preds, f'lightning_logs/{logger_name}/{TARGET}_last_epoch.pt')
+
+print('Saved models last logits')

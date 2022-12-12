@@ -2,7 +2,6 @@ import torch
 
 def calc_entropy(logits, problem_type='multiclass'):
     logits = torch.from_numpy(logits)
-    print(logits.shape)
     if problem_type == 'multiclass':
         logit_func = torch.nn.Sigmoid()
         probs = logit_func(logits)
