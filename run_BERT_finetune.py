@@ -162,9 +162,9 @@ for k in range(NUM_SPLITS):
         output_dir=f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}',  # [17:] removes 'huggingface_logs'
         save_strategy='epoch',
         save_total_limit=1,
-        metric_for_best_model='f1_macro',  # f1-score for now
-        greater_is_better=True,
-        load_best_model_at_end=True,
+        # metric_for_best_model='f1_macro',  # f1-score for now
+        # greater_is_better=True,
+        # load_best_model_at_end=True,
         logging_strategy='epoch',
         logging_dir=logging_name,
         report_to='tensorboard',
