@@ -17,11 +17,11 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 ### -- set the job Name -- 
 #BSUB -J pretrain_finetuner
 ### -- ask for number of cores (default: 1) -- 
-#BSUB -n 8
+#BSUB -n 4
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=8GB]"
+#BSUB -R "rusage[mem=32GB]"
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 

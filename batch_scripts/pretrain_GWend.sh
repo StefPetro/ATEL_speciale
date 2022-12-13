@@ -15,13 +15,13 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
-#BSUB -J roberta_Tekstbaand
+#BSUB -J pretrain_GWend
 ### -- ask for number of cores (default: 1) -- 
-#BSUB -n 4
+#BSUB -n 8
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=2GB]"
+#BSUB -R "rusage[mem=16GB]"
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 
@@ -34,8 +34,8 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o batch_out/roberta_Tekstbaand.out
-#BSUB -e batch_out/roberta_Tekstbaand.err
+#BSUB -o batch_out/pretrain_GWend.out
+#BSUB -e batch_out/pretrain_GWend.err
 
 # here follow the commands you want to execute 
-python3 run_roberta_finetune.py --target_col "Tekstbånd"
+python3 pretrain_finetune.py

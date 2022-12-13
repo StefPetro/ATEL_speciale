@@ -29,6 +29,7 @@ all_splits = [k for k in kf.split(book_ids)]
 
 scores = pd.DataFrame()
 SEMs = pd.DataFrame()
+
 for t in target_cols:
 
     # Get the target
@@ -51,11 +52,11 @@ for t in target_cols:
         # # For BERT
         # preds_dir = glob.glob(f"./bert_logs/{t.replace(' ', '_')}/*/CV_{k+1}/*.pt")
 
-        # # For BørneBÆRTa with warmup
-        # preds_dir = glob.glob(f"./warmup_logs/{t}/*/CV_{k+1}/*.pt")
+        # For BørneBÆRTa with warmup
+        preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_091122/{t}/*/CV_{k+1}/*.pt")
 
         # For BørneBÆRTa without warmup
-        preds_dir = glob.glob(f"./no_warmup_logs/{t}/*/CV_{k+1}/*.pt")
+        # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_131022/{t}/*/CV_{k+1}/*.pt")
 
         assert len(preds_dir) == 1, "There must only be 1 set of predictions"
 
@@ -73,7 +74,6 @@ for t in target_cols:
             compute_metrics(preds, torch.Tensor(target), multi_label, num_labels)
         )
         
-
     metrics_df = pd.DataFrame(metrics)
     k_scores = metrics_df.mean(axis=0)
 
@@ -87,11 +87,11 @@ print(
     + " \pm "
     + ((SEMs * 100).round(1)).astype(str)).T
 )
-# print(
-#     (scores.mean(axis=1) * 100).round(1).astype(str)
-#     + " \pm "
-#     + (SEMs.mean(axis=1) * 100).round(1).astype(str)
-# )
+print(
+    (scores.mean(axis=1) * 100).round(1).astype(str)
+    + " \pm "
+    + (SEMs.mean(axis=1) * 100).round(1).astype(str)
+)
 
 print(
     (scores * 100).round(1).mean(axis=1).round(1).astype(str)

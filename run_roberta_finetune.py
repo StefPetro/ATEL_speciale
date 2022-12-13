@@ -25,7 +25,9 @@ parser.add_argument(
 args = parser.parse_args()
 
 TARGET = args.target_col
+WARMUP = True
 
+MODEL_PATH = './models/BabyBERTa_091122' if WARMUP else './models/BabyBERTa_131022'
 SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
@@ -122,7 +124,7 @@ for k in range(NUM_SPLITS):
     val_dataset = token_dataset.select(val_idx)
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "models/BabyBERTa_131022",
+        MODEL_PATH,
         num_labels=NUM_LABELS,
         problem_type=p_t,
         label2id=label2id,
@@ -130,24 +132,24 @@ for k in range(NUM_SPLITS):
     )
 
     logging_name = (
-        f"no_warmup_logs"
+        f"babyberta_logs/{MODEL_PATH}"
         + f"/{TARGET}"
         + f"/BERT-BS{BATCH_SIZE}"
         + f"-BA{BATCH_ACCUMALATION}"
         + f"-ep{NUM_EPOCHS}"
         + f"-seed{SEED}"
         + f"-WD{WEIGHT_DECAY}"
-        + f"-LR{LEARNING_RATE}-131022"
+        + f"-LR{LEARNING_RATE}"
         + f"/CV_{k+1}"
     )
 
     training_args = TrainingArguments(
-        output_dir=f"huggingface_saves_131022/{TARGET}",
+        output_dir=f"babyberta_saves/{MODEL_PATH}_WARMUP{WARMUP}/{TARGET}",
         save_strategy="epoch",
         save_total_limit=1,
-        metric_for_best_model="eval_f1_macro",  # f1-score for now
-        greater_is_better=True,
-        load_best_model_at_end=True,
+        # metric_for_best_model="eval_f1_macro",  # f1-score for now
+        # greater_is_better=True,
+        load_best_model_at_end=False,
         logging_strategy="epoch",
         logging_dir=logging_name,
         report_to="tensorboard",
@@ -172,7 +174,7 @@ for k in range(NUM_SPLITS):
 
     trainer.train()
 
-    trainer.save_model(f"models/BEST-RoBERTa-131022_{TARGET}")
+    trainer.save_model(f"{MODEL_PATH}_{TARGET}-CV{k+1}")
 
     trainer.model.eval()
     outputs = trainer.model(
@@ -181,7 +183,7 @@ for k in range(NUM_SPLITS):
         attention_mask=torch.tensor(val_dataset["attention_mask"]).to('cuda')
     )
 
-    torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
+    torch.save(outputs.logits, f"{logging_name}/last_model_logits.pt")
 
     # ## Removes the saved checkpoints, as they take too much space
     # for f in os.listdir(f"huggingface_saves/{TARGET}"):
