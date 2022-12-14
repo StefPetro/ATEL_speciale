@@ -64,7 +64,7 @@ trainer = Trainer(
     data_collator=data_collator,
     train_dataset=dataset['train'],
 )
-trainer.train()
+trainer.train(resume_from_checkpoint = True)
 
 trainer.save_model("./models/BabyBERTa_091122_GW")
 
