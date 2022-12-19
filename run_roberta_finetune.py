@@ -25,9 +25,10 @@ parser.add_argument(
 args = parser.parse_args()
 
 TARGET = args.target_col
-WARMUP = True
+#WARMUP = True
 
-MODEL_PATH = './models/BabyBERTa_091122' if WARMUP else './models/BabyBERTa_131022'
+MODEL_PATH = './models/BabyBERTa-GWstart-gyldendal'
+#MODEL_PATH = './models/BabyBERTa_091122' if WARMUP else './models/BabyBERTa_131022'
 SEED = 42
 NUM_SPLITS = 10
 BATCH_SIZE = 16
@@ -144,7 +145,7 @@ for k in range(NUM_SPLITS):
     )
 
     training_args = TrainingArguments(
-        output_dir=f"babyberta_saves/{MODEL_PATH}_WARMUP{WARMUP}/{TARGET}",
+        output_dir=f"babyberta_saves/{MODEL_PATH}/{TARGET}",
         save_strategy="epoch",
         save_total_limit=1,
         # metric_for_best_model="eval_f1_macro",  # f1-score for now
