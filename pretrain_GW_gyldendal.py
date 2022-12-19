@@ -1,42 +1,32 @@
 from transformers import (
-    RobertaConfig,
+    LineByLineTextDataset,
     RobertaTokenizer,
     RobertaForMaskedLM,
     DataCollatorForLanguageModeling,
     Trainer,
     TrainingArguments,
 )
-from datasets import load_from_disk
-
-import sys
-sys.setrecursionlimit(1000000)
-
-dataset = load_from_disk("tokenized_gw.hf")
 
 tokenizer = RobertaTokenizer.from_pretrained(
     "./tokenizers/BPEtokenizer_121022", max_length=128
 )
 
-config = RobertaConfig(
-    vocab_size=5_000,
-    max_position_embeddings=130,
-    hidden_size=256,
-    intermediate_size=1024,
-    num_attention_heads=8,
-    num_hidden_layers=8,
-    type_vocab_size=1,
-)
+model = RobertaForMaskedLM.from_pretrained("./models/BabyBERTa-GWstart").cuda()
 
-model = RobertaForMaskedLM(config=config).cuda()
+dataset = LineByLineTextDataset(
+    tokenizer=tokenizer,
+    file_path="./data/Gyldendal_child_books/gyldendalbooks.txt",
+    block_size=128,
+)
 
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer, mlm=True, mlm_probability=0.15
 )
 
 training_args = TrainingArguments(
-    output_dir="./models/RoBERTa-GWstart-warmup",
+    output_dir="./models/RoBERTa-GWstart-gyldendal",
     overwrite_output_dir=True,
-    num_train_epochs=5,
+    num_train_epochs=10,
     per_device_train_batch_size=64,
     do_train=True,
     do_eval=False,
@@ -55,8 +45,8 @@ trainer = Trainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
-    train_dataset=dataset['train'],
+    train_dataset=dataset,
 )
-trainer.train(resume_from_checkpoint = True)
+trainer.train()
 
-trainer.save_model("./models/BabyBERTa-GWstart-warmup")
+trainer.save_model("./models/BabyBERTa-GWstart-gyldendal")
