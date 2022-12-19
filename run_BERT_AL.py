@@ -173,9 +173,9 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
             save_strategy='steps',
             save_steps=43,
             save_total_limit=1,
-            metric_for_best_model='f1_macro',  # f1-score for now
-            greater_is_better=True,
-            load_best_model_at_end=True,
+            # metric_for_best_model='f1_macro',  # f1-score for now
+            # greater_is_better=True,
+            # load_best_model_at_end=True,
             logging_strategy='steps',
             logging_steps=43,
             logging_dir=logging_name,

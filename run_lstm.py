@@ -68,6 +68,8 @@ settings = {
 
 print(f'RUNNING CV K = {CV+1}/{NUM_FOLDS}')
 
+print(torch.cuda.mem_get_info())  # prints the amount of memory available on the GPU
+
 data = lstm_data(
     book_col=book_col, 
     target_col=TARGET, 

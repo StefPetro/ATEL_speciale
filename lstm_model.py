@@ -39,7 +39,7 @@ class lstm_text(pl.LightningModule):
         self.num_layers    = kwargs.get("num_layers",    1)
         self.l1_size       = kwargs.get('l1_size',       512)
         self.l2_size       = kwargs.get('l2_size',       256)
-        self.dropout       = kwargs.get("dropout",       0.2)
+        self.dropout_val   = kwargs.get("dropout",       0.2)
         self.batch_size    = kwargs.get("batch_size",    32)
         self.learning_rate = kwargs.get('learning_rate', 1e-4)
         self.output_size   = kwargs.get('output_size',   1)
@@ -53,7 +53,7 @@ class lstm_text(pl.LightningModule):
         self.lstm = nn.LSTM(input_size    = self.n_features,
                             hidden_size   = self.hidden_size,
                             num_layers    = self.num_layers,
-                            dropout       = self.dropout,
+                            dropout       = self.dropout_val,
                             bidirectional = True,
                             batch_first   = True)
 
@@ -67,7 +67,7 @@ class lstm_text(pl.LightningModule):
                                    out_features = self.output_size)
         
         
-        self.dropout = nn.Dropout(p=0.2)
+        self.dropout = nn.Dropout(p=self.dropout_val)
         
         if self.multi_label:  # if we are trying to solve a multi label problem
             print('Set to multi label classification')
