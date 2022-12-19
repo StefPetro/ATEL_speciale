@@ -15,13 +15,13 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
-#BSUB -J pretrain_GWstart
+#BSUB -J pretrain_GW_gyldendal
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 8
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=16GB]"
+#BSUB -R "rusage[mem=2GB]"
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 
@@ -34,8 +34,8 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -o batch_out/pretrain_GWstart.out
-#BSUB -e batch_out/pretrain_GWstart.err
+#BSUB -o batch_out/pretrain_GW_gyldendal.out
+#BSUB -e batch_out/pretrain_GW_gyldendal.err
 
 # here follow the commands you want to execute 
-python3 pretrain_GW.py
+python3 pretrain_GW_gyldendal.py
