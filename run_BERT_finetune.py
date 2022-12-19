@@ -209,7 +209,7 @@ for k in range(NUM_SPLITS):
     # )
 
     # torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
-    torch.save(outputs.predictions, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
+    torch.save(outputs.predictions, f"{logging_name}/{TARGET}_CV{k+1}_logits.pt")
     
     # print('Output metrics from model:')
     # print(
