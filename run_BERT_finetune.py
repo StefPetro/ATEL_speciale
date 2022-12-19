@@ -1,6 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import TrainingArguments, Trainer, TrainerCallback
-from transformers import AdamW, get_linear_schedule_with_warmup
+from transformers import TrainingArguments, Trainer
 from datasets import Dataset
 from torchmetrics.functional.classification import multilabel_exact_match
 from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
@@ -14,8 +13,6 @@ from atel.data import BookCollection
 import argparse
 import yaml
 from yaml import CLoader
-import os
-import shutil
 
 parser = argparse.ArgumentParser(description='Arguments for running the BERT finetuning')
 parser.add_argument(
@@ -43,7 +40,7 @@ assert TARGET in target_info.keys()  # checks if targets is part of the actual p
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
-tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
+tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
@@ -85,8 +82,8 @@ def compute_metrics(eval_pred):
         # So if there is 4 labels, then 4 recalls are calculated.
         # These 4 values are then averaged, which is the end score that is logged.
         # The default average applied is 'macro' 
-        # precision_macro = multilabel_precision(preds, labels, num_labels=NUM_LABELS)
-        # recall_macro = multilabel_recall(preds, labels, num_labels=NUM_LABELS)
+        precision_macro = multilabel_precision(preds, labels, num_labels=NUM_LABELS)
+        recall_macro = multilabel_recall(preds, labels, num_labels=NUM_LABELS)
         f1_macro = multilabel_f1_score(preds, labels, num_labels=NUM_LABELS)
         
         # AUROC score of 1 is a perfect score
@@ -96,24 +93,24 @@ def compute_metrics(eval_pred):
         metrics = {
             'accuracy_exact':  acc_exact,
             'accuracy_macro':  acc_macro,
-            # 'precision_macro': precision_macro,
-            # 'recall_macro':    recall_macro,
+            'precision_macro': precision_macro,
+            'recall_macro':    recall_macro,
             'f1_macro':        f1_macro,
             'AUROC_macro':     auroc_macro
         }
     else:
         acc_micro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='micro')
         acc_macro = multiclass_accuracy(preds, labels, num_classes=NUM_LABELS, average='macro')
-        # precision_macro = multiclass_precision(preds, labels, num_classes=NUM_LABELS)
-        # recall_macro = multiclass_recall(preds, labels, num_classes=NUM_LABELS)
+        precision_macro = multiclass_precision(preds, labels, num_classes=NUM_LABELS)
+        recall_macro = multiclass_recall(preds, labels, num_classes=NUM_LABELS)
         f1_macro = multiclass_f1_score(preds, labels, num_classes=NUM_LABELS)
         auroc_macro = multiclass_auroc(preds, labels, num_classes=NUM_LABELS, average="macro", thresholds=None)
         
         metrics = {
             'accuracy_micro':  acc_micro,
             'accuracy_macro':  acc_macro,
-            # 'precision_macro': precision_macro,
-            # 'recall_macro':    recall_macro,
+            'precision_macro': precision_macro,
+            'recall_macro':    recall_macro,
             'f1_macro':        f1_macro,
             'AUROC_macro':     auroc_macro
         }
@@ -135,7 +132,7 @@ for k in range(NUM_SPLITS):
     train_dataset = token_dataset.select(train_idx)
     val_dataset   = token_dataset.select(val_idx)
 
-    model = AutoModelForSequenceClassification.from_pretrained("Maltehb/danish-bert-botxo", 
+    model = AutoModelForSequenceClassification.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal", 
                                                                num_labels=NUM_LABELS, 
                                                                problem_type=p_t,
                                                                label2id=label2id,
@@ -149,6 +146,7 @@ for k in range(NUM_SPLITS):
     # )
     
     logging_name = f'huggingface_logs'\
+                   +f'/BERT_mlm_gyldendal'\
                    +f'/{TARGET.replace(" ", "_")}'\
                    +f'/BERT-BS{BATCH_SIZE}'\
                    +f'-BA{BATCH_ACCUMALATION}'\
@@ -189,10 +187,10 @@ for k in range(NUM_SPLITS):
     
     trainer.train()
     
-    print('Evulate best model:')
+    print('Evulate model:')
     eval_dict = trainer.evaluate()
     print(eval_dict)
-    with open(f'{logging_name}/best_eval_{TARGET}_CV{k+1}.yml', 'w') as outfile:
+    with open(f'{logging_name}/eval_{TARGET}_CV{k+1}.yml', 'w') as outfile:
         yaml.dump(eval_dict, outfile, default_flow_style=False)
 
     print('Make predictions:')
