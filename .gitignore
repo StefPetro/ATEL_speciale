@@ -7,6 +7,8 @@ checkpoints/
 *.out
 batch_out_files
 huggingface_saves/
+imgs/
+test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
