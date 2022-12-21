@@ -27,7 +27,7 @@ args = parser.parse_args()
 TARGET = args.target_col
 #WARMUP = True
 
-MODEL_PATH = './models/BabyBERTa-GWstart-gyldendal'
+MODEL_PATH = './models/BabyBERTa_091122_GW'
 #MODEL_PATH = './models/BabyBERTa_091122' if WARMUP else './models/BabyBERTa_131022'
 SEED = 42
 NUM_SPLITS = 10

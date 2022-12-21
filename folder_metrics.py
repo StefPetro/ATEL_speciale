@@ -44,22 +44,25 @@ for t in target_cols:
     for k, (train, val) in enumerate(all_splits):
         target = y[val]
 
-        # # For LSTM
+        # For LSTM
         # preds_dir = glob.glob(
         #     f"./lightning_logs/{t.replace(' ', '_')}/*/bs_64/CV_{k+1}/*.pt"
         # )
 
-        # # For BERT
-        # preds_dir = glob.glob(f"./bert_logs/{t.replace(' ', '_')}/*/CV_{k+1}/*.pt")
+        # For BERT
+        # preds_dir = glob.glob(f"./huggingface_logs/{t.replace(' ', '_')}/*/CV_{k+1}/*.pt")
 
         # For BørneBÆRTa with warmup
         # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_091122/{t}/*/CV_{k+1}/*.pt")
+
+        # For BørneBERTa with warmup + GW
+        preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_091122_GW/{t}/*/CV_{k+1}/*.pt")
 
         # For BørneBÆRTa without warmup
         # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_131022/{t}/*/CV_{k+1}/*.pt")
 
         # For BørneBÆRTa starting with GW
-        preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa-GWstart-gyldendal/{t}/*/CV_{k+1}/*.pt")
+        # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa-GWstart-gyldendal/{t}/*/CV_{k+1}/*.pt")
 
         assert len(preds_dir) == 1, "There must only be 1 set of predictions"
 
