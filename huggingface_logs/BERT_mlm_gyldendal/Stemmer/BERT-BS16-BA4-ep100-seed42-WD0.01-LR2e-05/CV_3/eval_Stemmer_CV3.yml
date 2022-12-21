@@ -1,0 +1,11 @@
+epoch: 100.0
+eval_AUROC_macro: 0.5502164363861084
+eval_accuracy_exact: 0.7564102411270142
+eval_accuracy_macro: 0.8376067876815796
+eval_f1_macro: 0.39534881711006165
+eval_loss: 1.0572961568832397
+eval_precision_macro: 0.4486921429634094
+eval_recall_macro: 0.3945233225822449
+eval_runtime: 0.8551
+eval_samples_per_second: 91.22
+eval_steps_per_second: 5.847
