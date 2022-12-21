@@ -138,15 +138,20 @@ for k in range(NUM_SPLITS):
                                                                label2id=label2id,
                                                                id2label=id2label)
     
-    # optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
-    # lr_scheduler = get_linear_schedule_with_warmup(
-    #     optimizer = optimizer,
-    #     num_warmup_steps=0,
-    #     num_training_steps=100
-    # )
+    only_cls_layer = True
+    if only_cls_layer:
+        for param in list(model.bert.embeddings.parameters()):
+            param.requires_grad = False
+            print("Froze Embedding Layer")
+            
+        for idx in range(len(model.bert.encoder.layer)):
+            for param in list(model.bert.encoder.layer[idx].parameters()):
+                param.requires_grad = False
+            print('Froze Encoder layer')
     
     logging_name = f'huggingface_logs'\
                    +f'/BERT_mlm_gyldendal'\
+                   +f'/only_cls_layer'\
                    +f'/{TARGET.replace(" ", "_")}'\
                    +f'/BERT-BS{BATCH_SIZE}'\
                    +f'-BA{BATCH_ACCUMALATION}'\
@@ -196,30 +201,10 @@ for k in range(NUM_SPLITS):
     print('Make predictions:')
     test_dataset = val_dataset.remove_columns("labels")
     outputs = trainer.predict(test_dataset)
-    print(compute_metrics((outputs.predictions, val_dataset['labels'])))
+    # print(compute_metrics((outputs.predictions, val_dataset['labels'])))
 
-    # trainer.model.eval()
-    # trainer.model.to('cpu')
-    # outputs = trainer.model(
-    #     input_ids=torch.tensor(val_dataset["input_ids"]),
-    #     labels=torch.tensor(val_dataset["labels"]),
-    #     attention_mask=torch.tensor(val_dataset["attention_mask"])
-    # )
-
-    # torch.save(outputs.logits, f"{logging_name}/{TARGET}_CV{k+1}_best_model_logits.pt")
     torch.save(outputs.predictions, f"{logging_name}/{TARGET}_CV{k+1}_logits.pt")
     
-    # print('Output metrics from model:')
-    # print(
-    #    compute_metrics(
-    #        (torch.Tensor(outputs.logits), torch.tensor(val_dataset["labels"]))
-    #    )
-    # )
-    
-    ## Removes the saved checkpoints, as they take too much space
-    # for f in os.listdir(f'huggingface_saves/{TARGET}'):
-    #     shutil.rmtree(os.path.join(f'huggingface_saves/{TARGET}', f))
-        
     ## Last garbage collection
     del model
     del trainer

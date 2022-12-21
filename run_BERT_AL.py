@@ -54,7 +54,7 @@ with open('target_info.yaml', 'r', encoding='utf-8') as f:
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
-tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
+tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
@@ -141,7 +141,7 @@ all_splits = [k for k in kf.split(token_dataset)]
 
 def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):    
     
-    model = AutoModelForSequenceClassification.from_pretrained("Maltehb/danish-bert-botxo", 
+    model = AutoModelForSequenceClassification.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal", 
                                                                num_labels=NUM_LABELS, 
                                                                problem_type=p_t,
                                                                label2id=label2id,
@@ -149,6 +149,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     # +f'-ep{NUM_EPOCHS}'\
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
+                    +f'/BERT_mlm_gyldendal'\
                     +f'/BERT'\
                     +f'/entropy'\
                     +f'/{TARGET.replace(" ", "_")}'\
@@ -177,17 +178,17 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
             # greater_is_better=True,
             # load_best_model_at_end=True,
             logging_strategy='steps',
-            logging_steps=43,
+            logging_steps=50,
             logging_dir=logging_name,
             report_to='tensorboard',
             evaluation_strategy='steps',  # 'epoch'
-            eval_steps=43,
+            eval_steps=50,
             seed=SEED,
             per_device_train_batch_size=BATCH_SIZE,
             per_device_eval_batch_size=BATCH_SIZE,
             gradient_accumulation_steps=BATCH_ACCUMALATION,
             # num_train_epochs=NUM_EPOCHS,
-            max_steps=3281,  # If using max_steps switch strategies to steps
+            max_steps=3300,  # If using max_steps switch strategies to steps
             learning_rate=LEARNING_RATE,
             weight_decay=WEIGHT_DECAY
         )
@@ -290,6 +291,7 @@ while unlabeled_ds.num_rows > 0:
 # +f'-ep{NUM_EPOCHS}'\
 filepath = f'huggingface_logs'\
             +f'/active_learning'\
+            +f'/BERT_mlm_gyldendal'\
             +f'/BERT'\
             +f'/entropy'\
             +f'/{TARGET.replace(" ", "_")}'\
