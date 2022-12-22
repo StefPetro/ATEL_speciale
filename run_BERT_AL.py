@@ -150,7 +150,6 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
                     +f'/BERT_mlm_gyldendal'\
-                    +f'/BERT'\
                     +f'/entropy'\
                     +f'/{TARGET.replace(" ", "_")}'\
                     +f'/BS{BATCH_SIZE}'\
@@ -292,7 +291,6 @@ while unlabeled_ds.num_rows > 0:
 filepath = f'huggingface_logs'\
             +f'/active_learning'\
             +f'/BERT_mlm_gyldendal'\
-            +f'/BERT'\
             +f'/entropy'\
             +f'/{TARGET.replace(" ", "_")}'\
             +f'/BS{BATCH_SIZE}'\
