@@ -170,8 +170,8 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     training_args = TrainingArguments(
             # [17:] removes 'huggingface_logs'
             output_dir=f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}',
-            save_strategy='steps',
-            save_steps=43,
+            # save_strategy='steps',
+            # save_steps=43,
             save_total_limit=1,
             # metric_for_best_model='f1_macro',  # f1-score for now
             # greater_is_better=True,
@@ -285,6 +285,26 @@ while unlabeled_ds.num_rows > 0:
     
     all_test_logits['num_train_samples'].append(labeled_ds.num_rows)
     all_test_logits['logits'].append(test_logits.tolist())
+    
+    
+    logging_name = f'huggingface_logs'\
+                    +f'/active_learning'\
+                    +f'/BERT_mlm_gyldendal'\
+                    +f'/entropy'\
+                    +f'/{TARGET.replace(" ", "_")}'\
+                    +f'/BS{BATCH_SIZE}'\
+                    +f'-BA{BATCH_ACCUMALATION}'\
+                    +f'-MS{4375}'\
+                    +f'-seed{SEED}'\
+                    +f'-WD{WEIGHT_DECAY}'\
+                    +f'-LR{LEARNING_RATE}'\
+                    +f'/CV_{CV+1}'\
+                    +f'/num_samples_{labeled_ds.num_rows}'
+    
+    
+    ## Removes the saved checkpoints, as they take too much space
+    for f in os.listdir(f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}'):
+        shutil.rmtree(os.path.join(f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}', f))
 
 # Save the test logits for future analysis
 # +f'-ep{NUM_EPOCHS}'\
@@ -303,3 +323,5 @@ filepath = f'huggingface_logs'\
     
 with open(f'{filepath}/test_logits.json', 'w') as outfile:
     outfile.write(json.dumps(all_test_logits))
+
+print('File is saved. Run is finished!')
