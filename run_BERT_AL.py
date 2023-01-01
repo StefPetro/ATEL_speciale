@@ -10,7 +10,6 @@ from torchmetrics.functional.classification import multiclass_recall, multiclass
 from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
 from datasets import Dataset, concatenate_datasets
 from sklearn.model_selection import KFold
-from scipy.stats import entropy
 from atel.data import BookCollection
 from data_clean import *
 from acquisition_functions import *
@@ -29,14 +28,29 @@ parser.add_argument(
 )
 parser.add_argument(
     '--cv',
-    help='Which cross-validation fold to use. Can be 1-10',
+    help='Which cross-validation fold to use - Can be 1-10.',
     default=1,
     type=int
+)
+parser.add_argument(
+    '--acq_function',
+    help='Which acquisition function to use when choosing unlabeled data. Can be "entropy" or "random". Defaults to "entropy"',
+    default='entropy',
+    type=str
 )
 args = parser.parse_args()
 
 TARGET = args.target_col
 CV = args.cv - 1  # minus 1 as we want the --cv argument to be 1-10
+ACQ_FUNC = args.acq_function
+
+print(f'Acquisition function: {ACQ_FUNC} chosen')
+if ACQ_FUNC == 'entropy':
+    acq_function = calc_entropy
+elif ACQ_FUNC == 'random':
+    acq_function = random_acquisition
+
+assert ACQ_FUNC in ['entropy', 'random']
 
 SEED = 42
 NUM_SPLITS = 10
@@ -150,11 +164,11 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
                     +f'/BERT_mlm_gyldendal'\
-                    +f'/entropy'\
+                    +f'/{ACQ_FUNC}'\
                     +f'/{TARGET.replace(" ", "_")}'\
                     +f'/BS{BATCH_SIZE}'\
                     +f'-BA{BATCH_ACCUMALATION}'\
-                    +f'-MS{4375}'\
+                    +f'-MS{3300}'\
                     +f'-seed{SEED}'\
                     +f'-WD{WEIGHT_DECAY}'\
                     +f'-LR{LEARNING_RATE}'\
@@ -230,13 +244,13 @@ def update_datasets(
     unlabeled_ds: Dataset,
     eval_logits,
     problem_type: str='multilabel',
-    aq_size:      int=32,
-    aq_func=calc_entropy
+    acq_size:      int=32,
+    acq_func=calc_entropy
 ) -> Tuple[Dataset, Dataset]:
 
-    entropy     = aq_func(eval_logits, problem_type=problem_type)
+    entropy     = acq_func(eval_logits, problem_type=problem_type)
     top_samples = torch.topk(entropy,
-                             aq_size if unlabeled_ds.num_rows >= aq_size else unlabeled_ds.num_rows)
+                             acq_size if unlabeled_ds.num_rows >= acq_size else unlabeled_ds.num_rows)
     
         
     # Usually you would have an oracle that would label the unlabaled data points.
@@ -275,8 +289,8 @@ while unlabeled_ds.num_rows > 0:
             unlabeled_ds, 
             eval_logits, 
             problem_type=problem_type,
-            aq_size=32,
-            aq_func=calc_entropy
+            acq_size=32,
+            acq_func=acq_function
         )
     
     print(f'Labeled dataset size: {labeled_ds.num_rows}/{train_dataset.num_rows}')
@@ -290,11 +304,11 @@ while unlabeled_ds.num_rows > 0:
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
                     +f'/BERT_mlm_gyldendal'\
-                    +f'/entropy'\
+                    +f'/{ACQ_FUNC}'\
                     +f'/{TARGET.replace(" ", "_")}'\
                     +f'/BS{BATCH_SIZE}'\
                     +f'-BA{BATCH_ACCUMALATION}'\
-                    +f'-MS{4375}'\
+                    +f'-MS{3300}'\
                     +f'-seed{SEED}'\
                     +f'-WD{WEIGHT_DECAY}'\
                     +f'-LR{LEARNING_RATE}'\
@@ -311,11 +325,11 @@ while unlabeled_ds.num_rows > 0:
 filepath = f'huggingface_logs'\
             +f'/active_learning'\
             +f'/BERT_mlm_gyldendal'\
-            +f'/entropy'\
+            +f'/{ACQ_FUNC}'\
             +f'/{TARGET.replace(" ", "_")}'\
             +f'/BS{BATCH_SIZE}'\
             +f'-BA{BATCH_ACCUMALATION}'\
-            +f'-MS{4375}'\
+            +f'-MS{3300}'\
             +f'-seed{SEED}'\
             +f'-WD{WEIGHT_DECAY}'\
             +f'-LR{LEARNING_RATE}'\
