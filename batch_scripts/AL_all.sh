@@ -2,11 +2,15 @@
 
 list="1 2 3 4 5 6 7 8 9 10"
 target="Genre Tekstbaand Fremstillingsform Semantisk_univers Stemmer Perspektiv Holistisk_vurdering"
+acq_function="entropy random"
 
-for l in $list
+for a in $acq_function
 do
-    for t in $target
+    for l in $list
     do
-        bsub < ./batch_scripts/AL_scripts/$t/AL_${t}_cv$l.sh
+        for t in $target
+        do
+            bsub < ./batch_scripts/AL_scripts/$a/$t/AL_${t}_cv$l.sh
+        done
     done
 done
