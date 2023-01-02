@@ -66,7 +66,7 @@ def plot_distribution(category: str, **kwargs):
     if category == 'Holistisk vurdering':
         idx, y = [y for y, x in sorted(zip(idx, y))], [x for y, x in sorted(zip(idx, y))]
     
-    plt.figure(figsize=(7, 5))
+    plt.figure(figsize=(7, 5), dpi=300)
     plt.barh(idx, y)
     plt.title(f'Distribution of labels: {category}', fontsize=16)
     plt.xlabel('Count', fontsize=14)
