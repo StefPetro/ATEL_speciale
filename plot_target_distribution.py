@@ -43,7 +43,9 @@ for col in list_cols:
 
 
 # Replace "Vilde dyr " with "Vilde dyr" (space difference)
-ex_book_df[ex_book_df['Semantisk univers'] == 'Vilde dyr\xa0']['Semantisk univers'] = 'Vilde dyr'
+ex_book_df.loc[
+        ex_book_df["Semantisk univers"] == "Vilde dyr\xa0", "Semantisk univers"
+    ] = "Vilde dyr"
 
 
 with open('category_groupings.yaml', 'r', encoding='utf-8') as f:
