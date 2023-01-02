@@ -46,13 +46,13 @@ for col in list_cols:
 ex_book_df[ex_book_df['Semantisk univers'] == 'Vilde dyr\xa0']['Semantisk univers'] = 'Vilde dyr'
 
 
-# with open('category_groupings.yaml', 'r', encoding='utf-8') as f:
-#     groupings = yaml.load(f, Loader=CLoader)
+with open('category_groupings.yaml', 'r', encoding='utf-8') as f:
+     groupings = yaml.load(f, Loader=CLoader)
 
-# for group in groupings['Semantisk univers']:
-#     ex_book_df["Semantisk univers"] = ex_book_df["Semantisk univers"].replace(
-#         groupings['Semantisk univers'][group], group
-#     ) 
+for group in groupings['Semantisk univers']:
+    ex_book_df["Semantisk univers"] = ex_book_df["Semantisk univers"].replace(
+        groupings['Semantisk univers'][group], group
+    )
 
 
 def plot_distribution(category: str, **kwargs):
@@ -83,12 +83,12 @@ def plot_distribution(category: str, **kwargs):
 
 
 all_cats = {
-    'Genre': {'xlim': None},
-    'Tekstbånd': {'xlim': 400},
-    'Fremstillingsform': {'xlim': None},
-    'Semantisk univers': {'xlim': None},
-    'Stemmer': {'xlim': 600},
-    'Perspektiv': {'xlim': 500},
+    'Genre':               {'xlim': None},
+    'Tekstbånd':           {'xlim': 400},
+    'Fremstillingsform':   {'xlim': None},
+    'Semantisk univers':   {'xlim': None},
+    'Stemmer':             {'xlim': 600},
+    'Perspektiv':          {'xlim': 500},
     'Holistisk vurdering': {'xlim': 300}
 }
 
