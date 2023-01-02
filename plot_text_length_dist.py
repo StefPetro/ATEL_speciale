@@ -26,10 +26,8 @@ plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
 plt.yscale('log')
 
-plt.savefig(f'imgs/sentence_length_dist/sentence_length_dist.png', bbox_inches="tight")
+plt.savefig(f'imgs/text_length_dist/text_length_dist.png', bbox_inches="tight")
 # plt.show()
 
 print(np.min(lns), np.max(lns))
 print(np.percentile(lns, 95))
-
-
