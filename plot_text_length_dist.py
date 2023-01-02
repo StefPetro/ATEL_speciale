@@ -19,7 +19,7 @@ plt.axvline(np.percentile(lns, 95), color='k', linestyle='dashed', linewidth=1)
 min_ylim, max_ylim = plt.ylim()
 
 plt.text(np.percentile(lns, 95)*1.1, max_ylim*0.9, f'95% percentile: {np.percentile(lns, 95)}')
-plt.title('Distribution of number of words in texts', fontsize=16)
+plt.title('Distribution of number of words in books', fontsize=16)
 plt.xlabel('Number of words', fontsize=14)
 plt.ylabel('Count', fontsize=14)
 plt.xticks(fontsize=12)
