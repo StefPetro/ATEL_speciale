@@ -10,8 +10,10 @@ from torchmetrics.functional.classification import multiclass_recall, multiclass
 from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
 from datasets import Dataset
 import matplotlib.pyplot as plt
+import seaborn as sns
 from atel.data import BookCollection
 from data_clean import *
+sns.set_style('whitegrid')
 
 NUM_SPLITS = 10
 SEED = 42
@@ -21,9 +23,10 @@ set_seed(SEED)
 
 filepath = f'huggingface_logs'\
           +f'/active_learning'\
-          +f'/BERT/entropy'\
+          +f'/BERT_mlm_gyldendal'\
+          +f'/entropy'\
           +f'/Genre'\
-          +f'/BS16-BA2-ep100-seed42-WD0.01-LR2e-05'\
+          +f'/BS16-BA4-MS3300-seed42-WD0.01-LR2e-05'\
           +f'/CV_1'\
           +f'/test_logits.json'
 
