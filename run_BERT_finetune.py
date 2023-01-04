@@ -1,12 +1,14 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer
 from datasets import Dataset
-from torchmetrics.functional.classification import multilabel_exact_match
-from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
-from torchmetrics.functional.classification import multilabel_recall, multilabel_precision
-from torchmetrics.functional.classification import multiclass_accuracy, multiclass_f1_score
-from torchmetrics.functional.classification import multiclass_recall, multiclass_precision
-from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
+from torchmetrics.functional.classification import (
+    multilabel_exact_match,
+    multilabel_accuracy, multiclass_accuracy,
+    multilabel_f1_score, multiclass_f1_score,
+    multilabel_recall, multiclass_recall,
+    multilabel_precision, multiclass_precision,
+    multilabel_auroc, multiclass_auroc
+)
 from sklearn.model_selection import KFold
 from data_clean import *
 from atel.data import BookCollection
