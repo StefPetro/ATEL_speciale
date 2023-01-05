@@ -2,12 +2,14 @@ import json
 import torch
 from sklearn.model_selection import KFold
 from transformers import AutoTokenizer
-from torchmetrics.functional.classification import multilabel_exact_match
-from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
-from torchmetrics.functional.classification import multilabel_recall, multilabel_precision
-from torchmetrics.functional.classification import multiclass_accuracy, multiclass_f1_score
-from torchmetrics.functional.classification import multiclass_recall, multiclass_precision
-from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
+from torchmetrics.functional.classification import (
+    multilabel_exact_match,
+    multilabel_accuracy, multiclass_accuracy,
+    multilabel_f1_score, multiclass_f1_score,
+    multilabel_recall, multiclass_recall,
+    multilabel_precision, multiclass_precision,
+    multilabel_auroc, multiclass_auroc
+)
 from datasets import Dataset
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -21,24 +23,25 @@ TARGET = 'Genre'
 NUM_LABELS = 15
 set_seed(SEED)
 
-filepath = f'huggingface_logs'\
-          +f'/active_learning'\
-          +f'/BERT_mlm_gyldendal'\
-          +f'/entropy'\
-          +f'/Genre'\
-          +f'/BS16-BA4-MS3300-seed42-WD0.01-LR2e-05'\
-          +f'/CV_1'\
-          +f'/test_logits.json'
+all_logits = {}
+for func in ['entropy', 'random']:
+    filepath = f'huggingface_logs'\
+            +f'/active_learning'\
+            +f'/BERT_mlm_gyldendal'\
+            +f'/{func}'\
+            +f'/Genre'\
+            +f'/BS16-BA4-MS3300-seed42-WD0.01-LR2e-05'\
+            +f'/CV_1'\
+            +f'/test_logits.json'
+   
+    with open(filepath, 'r') as loadfile:
+        data = json.load(loadfile)
 
-with open(filepath, 'r') as loadfile:
-    data = json.load(loadfile)
-
-print(data.keys())
-num_samples = data['num_train_samples']
-logits = torch.tensor(data['logits'])
-print(len(num_samples))
-print(logits.shape)
-
+    print(data.keys())
+    num_samples = data['num_train_samples']
+    logits = torch.tensor(data['logits'])
+    all_logits[func] = logits
+    
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
 tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
@@ -113,12 +116,15 @@ def compute_metrics(logits, labels, problem_type: str='multilabel'):
     return metrics
 
 
-y = []
-for l in logits:
-    metrics = compute_metrics(l, targets, problem_type='multilabel')
-    y.append(metrics['accuracy_exact'].item())
+print(all_logits.keys())
+for func, logits in all_logits.items():
+    y = []
+    for l in logits:
+        metrics = compute_metrics(l, targets, problem_type='multilabel')
+        y.append(metrics['accuracy_exact'].item())
+    plt.plot(num_samples, y, marker='o', label=func)
 
-print(y)
 print('Plotting')
-plt.plot(num_samples, y, marker='o')
+# plt.plot(num_samples, y, marker='o')
+plt.legend()
 plt.show()
