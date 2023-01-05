@@ -47,7 +47,7 @@ lstm_metric_dict = {
         'val_step_loss':         'validation step loss'
     }
 
-def hf_get_all_cv(metric: str='eval/f1_macro', target: str='Genre', model: str='BERT'):
+def hf_get_all_cv(target: str='Genre', model: str='BERT'):
     
     filepath_dict = {
         'BERT': f'./huggingface_logs/{target}/BERT-BS16-BA4-ep100-seed42-WD0.01-LR2e-05',
@@ -92,12 +92,12 @@ def plot_hf_metric(target: str='Genre', model: str='BERT'):
         plt.close()
         # plt.show()
 
-# for model in ['BERT', 'BERT_Gyldendal']:
-#     print(f'Starting plotting for {model}...')
-#     for target in targets:
-#         plot_hf_metric(target, model)
-#         print(f'Finished with {target}')
-#     print(f'Done with {model}!')
+for model in ['BERT', 'BERT_Gyldendal']:
+    print(f'Starting plotting for {model}...')
+    for target in targets:
+        plot_hf_metric(target, model)
+        print(f'Finished with {target}')
+    print(f'Done with {model}!')
     
 # Function takes a long time to run
 # We want to get all metrics at the same time, to reduce runtime
@@ -148,8 +148,8 @@ def plot_lstm_metric(target: str):
         plt.close()
         # plt.show()
 
-print('Starting plotting for LSTM...')
-for target in targets:
-    plot_lstm_metric(target)
-    print(f'Finished plot for {target}')
-print('Done with LSTM!')
+# print('Starting plotting for LSTM...')
+# for target in targets:
+#     plot_lstm_metric(target)
+#     print(f'Finished plot for {target}')
+# print('Done with LSTM!')
