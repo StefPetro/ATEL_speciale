@@ -27,23 +27,23 @@ targets = ['Genre', 'Tekstbaand',
            'Holistisk_vurdering']
 
 hf_metric_dict = {
-        'eval/AUROC_macro':    'AUROC macro',
-        'eval/accuracy_exact': 'val accuracy exact',
-        'eval/accuracy_micro': 'val accuracy micro',
-        'eval/accuracy_macro': 'val accuracy macro',
-        'eval/f1_macro':       'f1 macro',
-        'eval/loss':           'validation loss'
+        'eval/AUROC_macro':    'AUROC Macro',
+        'eval/accuracy_exact': 'Subset Acc.',
+        'eval/accuracy_micro': 'Acc. Micro',
+        'eval/accuracy_macro': 'Acc. Macro',
+        'eval/f1_macro':       'F1 Macro',
+        'eval/loss':           'Val Loss'
     }
 
 lstm_metric_dict = {
-        'train_step_loss':       'train loss',
-        'val_epoch_AUROC_macro': 'AUROC macro',
-        'val_epoch_acc_exact':   'val accuracy exact',
-        'val_epoch_acc_micro':   'val accuracy micro',
-        'val_epoch_acc_macro':   'val accuracy macro',
-        'val_epoch_f1_macro':    'f1 macro',
-        'val_epoch_loss':        'validation epoch loss',
-        'val_step_loss':         'validation step loss'
+        'train_step_loss':       'Train Loss',
+        'val_epoch_AUROC_macro': 'AUROC Macro',
+        'val_epoch_acc_exact':   'Subset Acc.',
+        'val_epoch_acc_micro':   'Acc. Micro',
+        'val_epoch_acc_macro':   'Acc. Macro',
+        'val_epoch_f1_macro':    'F1 Macro',
+        'val_epoch_loss':        'Val Epoch Loss',
+        'val_step_loss':         'Val Step Loss'
     }
 
 def hf_get_all_cv(target: str='Genre', model: str='BERT'):
@@ -87,9 +87,9 @@ def plot_hf_metric(target: str='Genre', model: str='BERT'):
         plt.figure(figsize=(7, 5), dpi=300)
         plt.plot(steps, mean)
         plt.fill_between(steps, mean-sem, mean+sem, alpha=0.33)
-        plt.title(f"{model}: {target} - {metric.split('/')[0]} {metric.split('/')[1].replace('_', ' ')}", fontsize=16)
+        plt.title(f"{model}\n{target} - {hf_metric_dict[metric]}", fontsize=16)
         plt.xlabel('Steps', fontsize=14)
-        plt.ylabel(f"{metric.split('/')[0]} {metric.split('/')[1].replace('_', ' ')}", fontsize=14)
+        plt.ylabel(f"{hf_metric_dict[metric]}", fontsize=14)
         plt.xticks(fontsize=12)
         plt.yticks(fontsize=12)
         plt.savefig(f"imgs/metrics/{model}/{target}/{metric.replace('/', '_')}.png", bbox_inches="tight")
