@@ -1,6 +1,5 @@
 from tensorboard.backend.event_processing import event_accumulator
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('whitegrid')
@@ -51,7 +50,12 @@ def hf_get_all_cv(target: str='Genre', model: str='BERT'):
     
     filepath_dict = {
         'BERT': f'./huggingface_logs/{target}/BERT-BS16-BA4-ep100-seed42-WD0.01-LR2e-05',
-        'BERT_Gyldendal': f'./huggingface_logs/BERT_mlm_gyldendal/{target}/BERT-BS16-BA4-ep100-seed42-WD0.01-LR2e-05'
+        'BERT_Gyldendal': f'./huggingface_logs/BERT_mlm_gyldendal/{target}/BERT-BS16-BA4-ep100-seed42-WD0.01-LR2e-05',
+        'BabyBERTa_WU': f'./babyberta_logs/models/BabyBERTa_091122/{target}/BERT-BS16-BA4-ep500-seed42-WD0.01-LR2e-05',
+        'BabyBERTa_WU_GW': f'./babyberta_logs/models/BabyBERTa_091122_GW/{target}/BERT-BS16-BA4-ep500-seed42-WD0.01-LR2e-05',
+        'BabyBERTa_noWU': f'./babyberta_logs/models/BabyBERTa_131022/{target}/BERT-BS16-BA4-ep500-seed42-WD0.01-LR2e-05',
+        'BabyBERTa_noWU_GW': f'./babyberta_logs/models/BabyBERTa_131022_GW/{target}/BERT-BS16-BA4-ep500-seed42-WD0.01-LR2e-05',
+        'BabyBERTa_GWstart_Gyldendal': f'./babyberta_logs/models/BabyBERTa-GWstart-gyldendal/{target}/BERT-BS16-BA4-ep500-seed42-WD0.01-LR2e-05'
     }
     
     all_metrics = {}
@@ -63,8 +67,8 @@ def hf_get_all_cv(target: str='Genre', model: str='BERT'):
                 all_metrics[metric] = val[1]
             elif metric in hf_metric_dict.keys():
                 all_metrics[metric] = np.vstack([all_metrics[metric], val[1]])
-
-    steps = data['eval/AUROC_macro'][0]
+    
+    steps = data['eval/loss'][0]
     all_sem = {}
     all_mean = {}
     for metric, vals in all_metrics.items():
@@ -74,7 +78,7 @@ def hf_get_all_cv(target: str='Genre', model: str='BERT'):
 
 
 def plot_hf_metric(target: str='Genre', model: str='BERT'):
-    all_mean, all_sem, steps = hf_get_all_cv(target)
+    all_mean, all_sem, steps = hf_get_all_cv(target, model)
     
     for metric in all_mean.keys():
         mean = all_mean[metric]
@@ -92,7 +96,14 @@ def plot_hf_metric(target: str='Genre', model: str='BERT'):
         plt.close()
         # plt.show()
 
-for model in ['BERT', 'BERT_Gyldendal']:
+model_names = [
+    'BERT', 'BERT_Gyldendal', 
+    'BabyBERTa_WU', 'BabyBERTa_WU_GW', 
+    'BabyBERTa_noWU', 'BabyBERTa_noWU_GW', 
+    'BabyBERTa_GWstart_Gyldendal'
+]
+
+for model in model_names:
     print(f'Starting plotting for {model}...')
     for target in targets:
         plot_hf_metric(target, model)
