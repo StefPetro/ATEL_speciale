@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import MultiLabelBinarizer
 from atel.data import BookCollection
 import yaml
 from yaml import CLoader

@@ -1,5 +1,6 @@
 import json
 import torch
+import numpy as np
 from sklearn.model_selection import KFold
 from transformers import AutoTokenizer
 from torchmetrics.functional.classification import (
@@ -19,32 +20,14 @@ sns.set_style('whitegrid')
 
 NUM_SPLITS = 10
 SEED = 42
-TARGET = 'Genre'
-NUM_LABELS = 15
+TARGET = 'Semantisk univers'
+NUM_LABELS = 5
+problem_type = 'multilabel'
 set_seed(SEED)
 
-all_logits = {}
-for func in ['entropy', 'random']:
-    filepath = f'huggingface_logs'\
-            +f'/active_learning'\
-            +f'/BERT_mlm_gyldendal'\
-            +f'/{func}'\
-            +f'/Genre'\
-            +f'/BS16-BA4-MS3300-seed42-WD0.01-LR2e-05'\
-            +f'/CV_1'\
-            +f'/test_logits.json'
-   
-    with open(filepath, 'r') as loadfile:
-        data = json.load(loadfile)
-
-    print(data.keys())
-    num_samples = data['num_train_samples']
-    logits = torch.tensor(data['logits'])
-    all_logits[func] = logits
-    
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
-tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
+tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
@@ -58,11 +41,27 @@ token_dataset = dataset.map(tokenize_function, batched=True)
 kf = KFold(n_splits=NUM_SPLITS, shuffle=True, random_state=SEED)
 all_splits = [k for k in kf.split(token_dataset)]
 
-train_idx, val_idx = all_splits[0]
-val_dataset   = token_dataset.select(val_idx)
+all_logits = {}
+for func in ['entropy', 'random']:
+    all_logits[func] = {}
+    for i in range(0, 10):
+        filepath = f'./huggingface_logs'\
+                +f'/active_learning'\
+                +f'/BERT_mlm_gyldendal'\
+                +f'/{func}'\
+                +f'/{TARGET.replace(" ", "_")}'\
+                +f'/BS16-BA4-MS3300-seed42-WD0.01-LR2e-05'\
+                +f'/CV_{i+1}'\
+                +f'/test_logits.json'
+    
+        with open(filepath, 'r') as loadfile:
+            data = json.load(loadfile)
 
-targets = torch.tensor(val_dataset['labels'])
-print(targets.shape)
+        all_logits[func][i] = {}
+        
+        all_logits[func][i]['num_samples'] = num_samples = data['num_train_samples']
+        all_logits[func][i]['logits'] = torch.tensor(data['logits'])
+
 
 def compute_metrics(logits, labels, problem_type: str='multilabel'):
     labels = labels.int()
@@ -116,15 +115,40 @@ def compute_metrics(logits, labels, problem_type: str='multilabel'):
     return metrics
 
 
-print(all_logits.keys())
-for func, logits in all_logits.items():
-    y = []
-    for l in logits:
-        metrics = compute_metrics(l, targets, problem_type='multilabel')
-        y.append(metrics['accuracy_exact'].item())
-    plt.plot(num_samples, y, marker='o', label=func)
+all_ys = {}
+for func, cvs in all_logits.items():  # func name and dict of all cvs
+    all_ys[func] = {}
+    for cv, val in cvs.items():
+        num_samples, logits = val['num_samples'], val['logits']
+        
+        train_idx, val_idx = all_splits[cv]
+        val_dataset = token_dataset.select(val_idx)
+        targets = torch.tensor(val_dataset['labels'])
+        
+        ys = {}
+        for l in logits:
+            metrics = compute_metrics(l, targets, problem_type)
+            for key in metrics.keys():
+                if key not in ys.keys():
+                    ys[key] = [metrics[key].item()]
+                else:
+                    ys[key].append(metrics[key].item())
+        
+        for key in ys.keys():
+            if key not in all_ys[func].keys():
+                all_ys[func][key] = np.array(ys[key])
+            else:
+                all_ys[func][key] = np.vstack([all_ys[func][key], ys[key]])
+    
 
 print('Plotting')
-# plt.plot(num_samples, y, marker='o')
+for func in all_ys.keys():
+    sem  = np.std(all_ys[func]['accuracy_exact'], axis=0)/np.sqrt(all_ys[func]['accuracy_exact'].shape[0])
+    mean = np.mean(all_ys[func]['accuracy_exact'], axis=0)
+
+    plt.plot(num_samples, mean, marker='o', label=func)
+    plt.fill_between(num_samples, mean-sem, mean+sem, alpha=0.33)
+
 plt.legend()
-plt.show()
+plt.savefig(f'imgs/AL/{TARGET}/accuracy_exact.png', bbox_inches="tight")
+plt.close()
