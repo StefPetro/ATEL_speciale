@@ -27,7 +27,8 @@ set_seed(SEED)
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
-tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
+# tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
+tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
