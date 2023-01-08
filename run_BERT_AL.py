@@ -157,11 +157,14 @@ all_splits = [k for k in kf.split(token_dataset)]
 
 def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):    
     
-    model = AutoModelForSequenceClassification.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal", 
-                                                               num_labels=NUM_LABELS, 
-                                                               problem_type=p_t,
-                                                               label2id=label2id,
-                                                               id2label=id2label)
+    def model_init():
+        model = AutoModelForSequenceClassification.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal", 
+                                                                num_labels=NUM_LABELS, 
+                                                                problem_type=p_t,
+                                                                label2id=label2id,
+                                                                id2label=id2label)
+        return model
+        
     # +f'-ep{NUM_EPOCHS}'\
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
@@ -209,7 +212,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
         )
     
     trainer = Trainer(
-        model=model,    
+        model_init=model_init,    
         args=training_args,
         train_dataset=labeled_ds,
         eval_dataset=test_ds,
