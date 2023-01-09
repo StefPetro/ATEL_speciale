@@ -21,10 +21,15 @@ def get_run(path: str) -> dict:
     return data
 
 
-targets = ['Genre', 'Tekstbaand', 
-           'Fremstillingsform', 'Semantisk_univers', 
-           'Stemmer', 'Perspektiv', 
-           'Holistisk_vurdering']
+targets = [
+    'Genre',
+    'Tekstbaand',
+    'Fremstillingsform',
+    'Semantisk_univers', 
+    'Stemmer',
+    'Perspektiv', 
+    'Holistisk_vurdering'
+]
 
 hf_metric_dict = {
         'eval/AUROC_macro':    'AUROC Macro',
@@ -45,6 +50,17 @@ lstm_metric_dict = {
         'val_epoch_loss':        'Val Epoch Loss',
         'val_step_loss':         'Val Step Loss'
     }
+
+model_title_dict = {
+    'BERT': 'Danish BERT',
+    'BERT_Gyldendal': 'Danish BERT + Gyldendal',
+    'BabyBERTa_WU': 'BørneBÆRTa $\div$ WU',
+    'BabyBERTa_WU_GW': 'BørneBÆRTa $+$ WU',
+    'BabyBERTa_noWU': 'BørneBÆRTa $\div$ WU $+$ GW',
+    'BabyBERTa_noWU_GW': 'BørneBÆRTa $+$ WU $+$ GW',
+    'BabyBERTa_GWstart_Gyldendal': 'BørneBÆRTa GW $+$ Gyldendal',
+}
+
 
 def hf_get_all_cv(target: str='Genre', model: str='BERT'):
     
