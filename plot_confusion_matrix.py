@@ -19,8 +19,8 @@ set_seed(SEED)
 plot_dict = {
     'Genre':               {'shape': (5, 3), 'figsize': (12, 14)},
     'Tekstbaand':          {'shape': (2, 2), 'figsize': (8, 6)},
-    'Fremstillingsform':   {'shape': (4, 2), 'figsize': (8, 12)},
-    'Semantisk_univers':   {'shape': (3, 2), 'figsize': (8, 9)},
+    'Fremstillingsform':   {'shape': (3, 3), 'figsize': (12, 9)},
+    'Semantisk_univers':   {'shape': (2, 3), 'figsize': (12, 6)},
     'Stemmer':             {'shape': (1, 3), 'figsize': (12, 3.5)},
     'Perspektiv':          {'figsize': (5, 3)},
     'Holistisk_vurdering': {'figsize': (7, 5)},
@@ -30,15 +30,18 @@ def plot_multiclass_confusion_matrix(y_true, y_preds):
     cm = confusion_matrix(y_true.reshape(-1), np.argmax(y_preds, axis=1))
     cm_norm = cm / cm.sum(axis=1)[:, np.newaxis]
 
-    labels = [f'{x}\n{round(y, 4)}%' for x, y in zip(cm.flatten(), cm_norm.flatten())]
+    labels = [f'{x}\n{round(y*100, 2)}%' for x, y in zip(cm.flatten(), cm_norm.flatten())]
     labels = np.asarray(labels).reshape(cm.shape)
 
+    translated_labels = [translation["labels"][TARGET][l] for l in label_names]
+    
     plt.figure(figsize=plot_dict[TARGET.replace(" ", "_").replace("å", "aa")]['figsize'], dpi=300)
-    sns.heatmap(cm, annot=labels, fmt='', cmap='Blues')
+    sns.heatmap(cm, annot=labels, fmt='', cmap='Blues', 
+                xticklabels=translated_labels, yticklabels=translated_labels)
     plt.xlabel('Predicted label', fontsize=14)
     plt.ylabel('True label', fontsize=14)
     plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
+    plt.yticks(rotation=0, fontsize=12)
     plt.title(f'Confusion matrix: {translation["features"][TARGET]}', fontsize=16)
     plt.savefig(f'imgs/confusion_matrix/{TARGET.replace(" ", "_").replace("å", "aa")}/{TARGET.replace(" ", "_").replace("å", "aa")}_cm.png', bbox_inches="tight")
     # plt.show()
@@ -56,7 +59,7 @@ def plot_multilabel_confusion_matrix(y_true, y_preds):
     for i, (cm, ax) in enumerate(zip(cms, axes.flatten())):
         cm_norm = cm / cm.sum(axis=1)[:, np.newaxis]
         
-        labels = [f'{x}\n{round(y*100, 4)}%' for x, y in zip(cm.flatten(), cm_norm.flatten())]
+        labels = [f'{x}\n{round(y*100, 2)}%' for x, y in zip(cm.flatten(), cm_norm.flatten())]
         labels = np.asarray(labels).reshape(2, 2)
         
         sns.heatmap(cm, ax=ax, annot=labels, fmt='', cmap='Blues')
