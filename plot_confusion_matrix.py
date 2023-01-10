@@ -3,7 +3,6 @@ import torch
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import multilabel_confusion_matrix, confusion_matrix
-from sklearn.preprocessing import normalize
 from sklearn.model_selection import KFold
 from atel.data import BookCollection
 from data_clean import *
@@ -40,7 +39,7 @@ def plot_multiclass_confusion_matrix(y_true, y_preds):
     plt.ylabel('True label', fontsize=14)
     plt.xticks(fontsize=12)
     plt.yticks(fontsize=12)
-    plt.title(f'{TARGET}', fontsize=16)
+    plt.title(f'Confusion matrix: {translation["features"][TARGET]}', fontsize=16)
     plt.savefig(f'imgs/confusion_matrix/{TARGET.replace(" ", "_").replace("å", "aa")}/{TARGET.replace(" ", "_").replace("å", "aa")}_cm.png', bbox_inches="tight")
     # plt.show()
 
@@ -52,7 +51,7 @@ def plot_multilabel_confusion_matrix(y_true, y_preds):
 
     fig, axes = plt.subplots(rows, cols, figsize=plot_dict[TARGET.replace(" ", "_").replace("å", "aa")]['figsize'], dpi=300)
     fig.tight_layout(pad=5.0)  # rect=[0, 0.03, 1, 0.95]
-    fig.suptitle(f'Confusion matrices: {TARGET}', fontsize=16)
+    fig.suptitle(f'Confusion matrices: {translation["features"][TARGET]}', fontsize=16)
     
     for i, (cm, ax) in enumerate(zip(cms, axes.flatten())):
         cm_norm = cm / cm.sum(axis=1)[:, np.newaxis]
@@ -63,7 +62,7 @@ def plot_multilabel_confusion_matrix(y_true, y_preds):
         sns.heatmap(cm, ax=ax, annot=labels, fmt='', cmap='Blues')
         ax.set_xlabel('Predicted label', fontsize=12)
         ax.set_ylabel('True label', fontsize=12)
-        ax.set_title(label_names[i], fontsize=14)
+        ax.set_title(translation["labels"][TARGET][label_names[i]], fontsize=14)
     
     if cms.shape[0] != len(axes.flatten()):
         fig.delaxes(axes.flatten()[-1])
@@ -75,6 +74,9 @@ def plot_multilabel_confusion_matrix(y_true, y_preds):
 
 with open('target_info.yaml', 'r', encoding='utf-8') as f:
     target_info = yaml.load(f, Loader=CLoader)
+
+with open('translation.yaml', 'r', encoding='utf-8') as f:
+    translation = yaml.load(f, Loader=CLoader)
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 

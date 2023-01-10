@@ -1,0 +1,59 @@
+features:
+  Genre: Genre
+  Tekstbånd: Reference
+  Fremstillingsform: Text orginization
+  Semantisk univers: Semantic universe
+  Stemmer: Dialouge/voices
+  Perspektiv: Student narrator
+  Holistisk vurdering: Holistic evaluation
+labels:
+  Genre:
+    Anmeldelse: Review
+    Billedtekster: Picture texts
+    Eventyr: Fairy tale
+    Fagbog: Non-fiction book
+    Fantasifortælling: Fantasy narrative
+    Gyserfortælling: Horror story
+    Hverdagsberetning: Everyday recount
+    Hverdagsbeskrivelse: Everyday description
+    Mit kæledyr: My pet
+    Realistisk fortælling: Realistic narrative
+    Rim og remser: Rhymes and jingles
+    Selvportræt: Self portrait
+    Synspunkt: Point of view
+    Særdagsberetning: Special day recount
+    Ubestemmelig: Indefinable
+  Tekstbånd:
+    Henvisning til billede: Reference to picture
+    Leksikalsk: Lexical
+    Pronominel: Pronominal
+    Semantisk: Semantic
+  Fremstillingsform:
+    Argumenterende: Argumentative
+    Berettende: Recounting
+    Beskrivende: Descriptive
+    Forklarende: Explaining
+    Holdningstilkendegivelse: Expression of opinion
+    Instruerende: Instructive
+    Reflekterende: Reflective 
+    dialogisk: Dialogical
+  Semantisk univers:
+    Det nære: The personal
+    Dyr og natur: Animals and nature,
+    Menneskeliv: Human life
+    Oplevelse: Experience
+    Ubestemmelig: Indefinable
+  Stemmer:
+    En stemme: One voice
+    Flere konkrete stemmer: Multiple concrete voices
+    Flere potentielle stemmer: Multiple potential voices
+  Perspektiv:
+    Eksplicit fortæller: Explicit narrator
+    Implicit fortæller: Implicit narrator
+  Holistisk vurdering: 
+    0: 0
+    1: 1
+    2: 2
+    3: 3
+    4: 4
+    5: 5
