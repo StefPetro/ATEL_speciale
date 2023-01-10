@@ -18,11 +18,11 @@ set_seed(SEED)
 # shape = rows, cols
 # figsize = width, height
 plot_dict = {
-    'Genre':               {'shape': (5, 3), 'figsize': (12, 12.5)},
-    'Tekstbaand':          {'shape': (2, 2), 'figsize': (8, 5)},
-    'Fremstillingsform':   {'shape': (4, 2), 'figsize': (8, 10)},
-    'Semantisk_univers':   {'shape': (3, 2), 'figsize': (8, 7.5)},
-    'Stemmer':             {'shape': (1, 3), 'figsize': (12, 2.5)},
+    'Genre':               {'shape': (5, 3), 'figsize': (12, 14)},
+    'Tekstbaand':          {'shape': (2, 2), 'figsize': (8, 6)},
+    'Fremstillingsform':   {'shape': (4, 2), 'figsize': (8, 12)},
+    'Semantisk_univers':   {'shape': (3, 2), 'figsize': (8, 9)},
+    'Stemmer':             {'shape': (1, 3), 'figsize': (12, 3.5)},
     'Perspektiv':          {'figsize': (5, 3)},
     'Holistisk_vurdering': {'figsize': (7, 5)},
 }
@@ -57,13 +57,16 @@ def plot_multilabel_confusion_matrix(y_true, y_preds):
     for i, (cm, ax) in enumerate(zip(cms, axes.flatten())):
         cm_norm = cm / cm.sum(axis=1)[:, np.newaxis]
         
-        labels = [f'{x}\n{round(y, 4)}%' for x, y in zip(cm.flatten(), cm_norm.flatten())]
+        labels = [f'{x}\n{round(y*100, 4)}%' for x, y in zip(cm.flatten(), cm_norm.flatten())]
         labels = np.asarray(labels).reshape(2, 2)
         
         sns.heatmap(cm, ax=ax, annot=labels, fmt='', cmap='Blues')
         ax.set_xlabel('Predicted label', fontsize=12)
         ax.set_ylabel('True label', fontsize=12)
         ax.set_title(label_names[i], fontsize=14)
+    
+    if cms.shape[0] != len(axes.flatten()):
+        fig.delaxes(axes.flatten()[-1])
     
     plt.savefig(f'imgs/confusion_matrix/{TARGET.replace(" ", "_").replace("å", "aa")}/{TARGET.replace(" ", "_").replace("å", "aa")}_cm.png', bbox_inches="tight")
     # plt.close()
