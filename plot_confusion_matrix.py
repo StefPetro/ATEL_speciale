@@ -51,7 +51,7 @@ def plot_multilabel_confusion_matrix(y_true, y_preds):
     rows, cols = plot_dict[TARGET.replace(" ", "_").replace("å", "aa")]['shape']
 
     fig, axes = plt.subplots(rows, cols, figsize=plot_dict[TARGET.replace(" ", "_").replace("å", "aa")]['figsize'], dpi=300)
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    fig.tight_layout(pad=5.0)  # rect=[0, 0.03, 1, 0.95]
     fig.suptitle(f'Confusion matrices: {TARGET}', fontsize=16)
     
     for i, (cm, ax) in enumerate(zip(cms, axes.flatten())):
