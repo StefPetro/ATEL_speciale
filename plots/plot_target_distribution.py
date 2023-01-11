@@ -13,6 +13,8 @@ book_col = BookCollection(data_file='./data/book_col_271120.pkl')
 # Total number of books
 print(f'Number of books: {book_col.num_books}')
 
+with open('translation.yaml', 'r', encoding='utf-8') as f:
+    translation = yaml.load(f, Loader=CLoader)
 
 data = []
 
@@ -66,6 +68,8 @@ def plot_distribution(category: str, **kwargs):
     
     if category == 'Holistisk vurdering':
         idx, y = [y for y, x in sorted(zip(idx, y))], [x for y, x in sorted(zip(idx, y))]
+    
+    idx = [translation['labels'][category][i] for i in idx]
     
     plt.figure(figsize=(7, 5), dpi=300)
     plt.barh(idx, y)
