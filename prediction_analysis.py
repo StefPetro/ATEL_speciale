@@ -15,9 +15,9 @@ SEED = 42
 set_seed(SEED)
 
 logs_path_dict = {
-    'BERT_MLM':      '',
-    'LSTM':          '',
-    'BabyBERTA':     '',
+    'BERT_MLM':      './huggingface_logs/BERT_mlm_gyldendal',
+    'LSTM':          './lightning_logs',
+    'BabyBERTA':     './babyberta_logs/models/BabyBERTa_131022_GW',
     'Ridge':         '',
     'NaiveBayes':    '',
     'Random_forest': ''
@@ -79,11 +79,11 @@ for i in range(10):
 # compare labels with preds
 comparision = (labels == model_preds)
 
-print(idx[((~comparision[:, 0]) == (labels[:, 0] == 1))])
-print()
+# print(idx[((~comparision[:, 0]) == (labels[:, 0] == 1))])
         
 # Finds which data points the preds get right (True) and wrong (False)
 check = comparision.all(axis=1)
 
 wrong_preds = idx[~check]
+right_preds = idx[check]
 

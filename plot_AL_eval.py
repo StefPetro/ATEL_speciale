@@ -146,10 +146,12 @@ print('Plotting')
 for func in all_ys.keys():
     sem  = np.std(all_ys[func]['accuracy_exact'], axis=0)/np.sqrt(all_ys[func]['accuracy_exact'].shape[0])
     mean = np.mean(all_ys[func]['accuracy_exact'], axis=0)
-
+    print(mean)
     plt.plot(num_samples, mean, marker='o', label=func)
     plt.fill_between(num_samples, mean-sem, mean+sem, alpha=0.33)
 
 plt.legend()
 plt.savefig(f'imgs/AL/{TARGET}/accuracy_exact.png', bbox_inches="tight")
 plt.close()
+
+print('Done')
