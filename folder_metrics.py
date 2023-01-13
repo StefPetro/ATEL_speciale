@@ -52,14 +52,20 @@ for t in target_cols:
         # For BERT
         # preds_dir = glob.glob(f"./huggingface_logs/{t.replace(' ', '_')}/*/CV_{k+1}/*.pt")
 
+        # For BERT with MLM
+        # preds_dir = glob.glob(f"./huggingface_logs/BERT_mlm_gyldendal/{t.replace(' ', '_')}/*/CV_{k+1}/*.pt")
+
         # For BørneBÆRTa with warmup
         # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_091122/{t}/*/CV_{k+1}/*.pt")
 
         # For BørneBERTa with warmup + GW
-        preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_091122_GW/{t}/*/CV_{k+1}/*.pt")
+        # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_091122_GW/{t}/*/CV_{k+1}/*.pt")
 
         # For BørneBÆRTa without warmup
         # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_131022/{t}/*/CV_{k+1}/*.pt")
+
+        # For BørneBERTa without warmup + GW
+        preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa_131022_GW/{t}/*/CV_{k+1}/*.pt")
 
         # For BørneBÆRTa starting with GW
         # preds_dir = glob.glob(f"./babyberta_logs/models/BabyBERTa-GWstart-gyldendal/{t}/*/CV_{k+1}/*.pt")
@@ -91,7 +97,7 @@ for t in target_cols:
 print(
     (((scores * 100).round(1)).astype(str)
     + " \pm "
-    + ((SEMs * 100).round(1)).astype(str)).T
+    + ((SEMs * 100).round(1)).astype(str))
 )
 # print(
 #     (scores.mean(axis=1) * 100).round(1).astype(str)
