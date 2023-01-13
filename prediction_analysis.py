@@ -130,21 +130,25 @@ def get_right_wrong_preds(labels: np.ndarray, model_preds: np.ndarray) -> np.nda
     return mask
 
 
+## TODO: Deep ensemble csv
+## TODO: Find examples
+
 for TARGET in target_info.keys():
     print(f'Getting results for {TARGET}')
     problem_type = target_info[TARGET]['problem_type']
     logit_func = get_logit_func(problem_type)
     
     labels, texts, label_names, idx = get_labels_texts(book_col, TARGET)
-    df = pd.DataFrame(idx, columns=['index'])
     
+    df = pd.DataFrame(idx, columns=['index'])
     for model in logs_path_dict.keys():
         print(f'{model}')
         model_preds = get_model_preds(model, TARGET, problem_type)
         mask = get_right_wrong_preds(labels, model_preds)
         df.loc[:, model] = mask.astype(int)
-    
     df.to_csv(f'prediction_analysis/{TARGET.replace(" ", "_").replace("å", "aa")}/overview.csv', index=False)
+    
+    df = pd.DataFrame(idx, columns=['index'])
     
     if problem_type == 'multilabel':
         for i, l in enumerate(label_names):
@@ -159,4 +163,23 @@ for TARGET in target_info.keys():
             df.to_csv(f'prediction_analysis/{TARGET.replace(" ", "_").replace("å", "aa")}/label_{l}.csv', index=False)
     
     
+    
+
+TARGET = 'Fremstillingsform'
+l = 'Instruerende'
+def find_example(book_col: BookCollection, model: str, target: str, label: str):
+    labels, texts, label_names, idx = get_labels_texts(book_col, target)
+    
+    df = pd.read_csv(f'./prediction_analysis/{target}/label_{label}.csv')
+    
+    right_preds = df[model].values
+    labels = labels[:, label_names.index(label)]
+    
+    # find true positive
+    mask = np.logical_and(labels == 1, right_preds == 1)
+    print(texts[mask])
+    print(idx[mask])
+
+# find_example(book_col, 'BERT_MLM', TARGET, l)
+
 
