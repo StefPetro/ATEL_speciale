@@ -17,11 +17,18 @@ from atel.data import BookCollection
 from compute_metrics import compute_metrics
 from data_clean import *
 
+import os
+
 ## Set seed
 set_seed(42)
 
 with open("target_info.yaml", "r", encoding="utf-8") as f:
     target_info = yaml.load(f, Loader=CLoader)
+
+clf_dict = {"RidgeClassifier(class_weight='balanced')": 'RidgeClassifier',
+            'GaussianNB()': 'GaussianNB',
+            'RandomForestClassifier(n_estimators=1000, random_state=42)': 'RandomForest',
+}
 
 
 def evaluator(book_col, X, target_col, clf):
@@ -62,6 +69,11 @@ def evaluator(book_col, X, target_col, clf):
 
         y_pred = torch.Tensor(y_pred)
         y_val = torch.tensor(y_val)
+
+        # path = f'./baseline/{clf_dict[str(clf)]}/{target_col}/CV_{k+1}'
+        # os.makedirs(path, exist_ok = True) 
+
+        # torch.save(y_pred, f'{path}/preds.pt')
 
         metrics.append(compute_metrics(y_pred, y_val, multi_label, num_labels))
 
@@ -107,9 +119,9 @@ target_cols = [
 ]
 
 classifiers = [
-    RidgeClassifier(),
-    GaussianNB(),
-    RandomForestClassifier(n_estimators=1000, random_state=42),
+    RidgeClassifier(class_weight='balanced'),
+    # GaussianNB(),
+    # RandomForestClassifier(n_estimators=1000, random_state=42),
 ]
 
 for clf in classifiers:
