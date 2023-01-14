@@ -125,7 +125,46 @@ def get_right_wrong_preds(labels: np.ndarray, model_preds: np.ndarray) -> np.nda
     return mask
 
 
-## TODO: Deep ensemble csv
+def overview_csv(models: list, TARGET: str, problem_type: str, labels: np.ndarray):
+    df = pd.DataFrame(idx, columns=['index'])
+    for model in models:
+        print(f'{model}')
+        model_preds = get_model_preds(model, TARGET, problem_type)
+        mask = get_right_wrong_preds(labels, model_preds)
+        df.loc[:, model] = mask.astype(int)
+    df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/overview.csv', index=False)
+
+
+def label_csv(models: list, TARGET: str, problem_type: str, labels: np.ndarray, label_names: list):
+    assert problem_type == 'multilabel', 'Problem type needs to be multilabel'
+    
+    for i, l in enumerate(label_names):
+        print(f'Label: {l}')
+        df = pd.DataFrame(idx, columns=['index'])
+        for model in models:
+            print(f'{model}')
+            model_preds = get_model_preds(model, TARGET, problem_type)
+            mask = get_right_wrong_preds(labels[:, i], model_preds[:, i])
+            df.loc[:, model] = mask.astype(int)
+        
+        df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/label_{l}.csv', index=False)
+
+
+def ensemble_preds_csv(ensemble_models: list, idx: np.ndarray, cvs: np.ndarray, TARGET: str, problem_type: str, label_names: list):
+    assert problem_type == 'multilabel', 'Problem type needs to be multilabel'
+    
+    df = pd.DataFrame(data={'index': idx, 'cvs': cvs})
+    ensemble_preds = np.array([])
+    for model in ensemble_models:
+        model_preds = get_model_preds(model, TARGET, problem_type)
+        if ensemble_preds.shape[0] == 0:
+            ensemble_preds = model_preds[np.newaxis, :, :]
+        else:
+            ensemble_preds = np.vstack([ensemble_preds, model_preds[np.newaxis, :, :]])
+            
+    ensemble_preds = (ensemble_preds.sum(axis=0) >= 2).astype(int)
+    df[label_names] = ensemble_preds
+    df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/ensemble_preds.csv', index=False)
 
 
 for TARGET in target_info.keys():
@@ -135,42 +174,14 @@ for TARGET in target_info.keys():
     
     labels, texts, label_names, idx, cvs = get_labels_texts(book_col, TARGET)
     
-    # df = pd.DataFrame(idx, columns=['index'])
-    # for model in logs_path_dict.keys():
-    #     print(f'{model}')
-    #     model_preds = get_model_preds(model, TARGET, problem_type)
-    #     mask = get_right_wrong_preds(labels, model_preds)
-    #     df.loc[:, model] = mask.astype(int)
-    # df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/overview.csv', index=False)
+    overview_csv(logs_path_dict.keys(), TARGET, problem_type, labels)
     
     if problem_type == 'multilabel':
-        df = pd.DataFrame(data={'index': idx, 'cvs': cvs})
+        label_csv(logs_path_dict.keys(), TARGET, problem_type, labels, label_names)
         ensemble_models = ['BERT_MLM', 'BabyBERTA', 'RandomForest']
-        ensemble_preds = np.array([])
-        for model in ensemble_models:
-            model_preds = get_model_preds(model, TARGET, problem_type)
-            if ensemble_preds.shape[0] == 0:
-                ensemble_preds = model_preds[np.newaxis, :, :]
-            else:
-                ensemble_preds = np.vstack([ensemble_preds, model_preds[np.newaxis, :, :]])
-                
-        ensemble_preds = (ensemble_preds.sum(axis=0) >= 2).astype(int)
-        df[label_names] = ensemble_preds
-        df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/ensemble_preds.csv', index=False)
+        ensemble_preds_csv(ensemble_models, idx, cvs, TARGET, problem_type, label_names)
     
-    # if problem_type == 'multilabel':
-    #     for i, l in enumerate(label_names):
-    #         print(f'Label: {l}')
-    #         df = pd.DataFrame(idx, columns=['index'])
-    #         for model in logs_path_dict.keys():
-    #             print(f'{model}')
-    #             model_preds = get_model_preds(model, TARGET, problem_type)
-    #             mask = get_right_wrong_preds(labels[:, i], model_preds[:, i])
-    #             df.loc[:, model] = mask.astype(int)
-            
-    #         df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/label_{l}.csv', index=False)
-    
-    
+
 TARGET = 'Semantisk univers'
 l = 'Dyr og natur'
 def find_example(book_col: BookCollection, model: str, target: str, label: str):
