@@ -2,6 +2,8 @@ from tensorboard.backend.event_processing import event_accumulator
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import yaml
+from yaml import CLoader
 sns.set_style('whitegrid')
 
 ## https://stackoverflow.com/questions/52756152/tensorboard-extract-scalar-by-a-script
@@ -20,6 +22,8 @@ def get_run(path: str) -> dict:
         data[tag] = (np.asarray(x), np.asarray(y))
     return data
 
+with open('translation.yaml', 'r', encoding='utf-8') as f:
+    translation = yaml.load(f, Loader=CLoader)
 
 targets = [
     'Genre',
@@ -32,23 +36,23 @@ targets = [
 ]
 
 hf_metric_dict = {
-        'eval/AUROC_macro':    'AUROC Macro',
-        'eval/accuracy_exact': 'Subset Acc.',
-        'eval/accuracy_micro': 'Acc. Micro',
-        'eval/accuracy_macro': 'Acc. Macro',
-        'eval/f1_macro':       'F1 Macro',
+        'eval/AUROC_macro':    'Val. AUROC Macro',
+        'eval/accuracy_exact': 'Val. Subset Acc.',
+        'eval/accuracy_micro': 'Val. Acc. Micro',
+        'eval/accuracy_macro': 'Val. Acc. Macro',
+        'eval/f1_macro':       'Val. F1 Macro',
         'eval/loss':           'Val Loss'
     }
 
 lstm_metric_dict = {
         'train_step_loss':       'Train Loss',
-        'val_epoch_AUROC_macro': 'AUROC Macro',
-        'val_epoch_acc_exact':   'Subset Acc.',
-        'val_epoch_acc_micro':   'Acc. Micro',
-        'val_epoch_acc_macro':   'Acc. Macro',
-        'val_epoch_f1_macro':    'F1 Macro',
-        'val_epoch_loss':        'Val Epoch Loss',
-        'val_step_loss':         'Val Step Loss'
+        'val_epoch_AUROC_macro': 'Val. AUROC Macro',
+        'val_epoch_acc_exact':   'Val. Subset Acc.',
+        'val_epoch_acc_micro':   'Val. Acc. Micro',
+        'val_epoch_acc_macro':   'Val. Acc. Macro',
+        'val_epoch_f1_macro':    'Val. F1 Macro',
+        'val_epoch_loss':        'Val. Epoch Loss',
+        'val_step_loss':         'Val. Step Loss'
     }
 
 model_title_dict = {
@@ -58,7 +62,7 @@ model_title_dict = {
     'BabyBERTa_WU_GW': 'BørneBÆRTa $+$ WU',
     'BabyBERTa_noWU': 'BørneBÆRTa $\div$ WU $+$ GW',
     'BabyBERTa_noWU_GW': 'BørneBÆRTa $+$ WU $+$ GW',
-    'BabyBERTa_GWstart_Gyldendal': 'BørneBÆRTa GW $+$ Gyldendal',
+    'BabyBERTa_GWstart_Gyldendal': 'BørneBÆRTa (GW $+$ Gyl)',
 }
 
 
@@ -103,7 +107,7 @@ def plot_hf_metric(target: str='Genre', model: str='BERT'):
         plt.figure(figsize=(7, 5), dpi=300)
         plt.plot(steps, mean)
         plt.fill_between(steps, mean-sem, mean+sem, alpha=0.33)
-        plt.title(f"{model}\n{target} - {hf_metric_dict[metric]}", fontsize=16)
+        plt.title(f"{model_title_dict[model]}\n{translation['features'][target.replace('aa', 'å').replace('_', ' ')]} - {hf_metric_dict[metric]}", fontsize=16)
         plt.xlabel('Steps', fontsize=14)
         plt.ylabel(f"{hf_metric_dict[metric]}", fontsize=14)
         plt.xticks(fontsize=12)
@@ -166,7 +170,7 @@ def plot_lstm_metric(target: str):
         plt.figure(figsize=(7, 5), dpi=300)
         plt.plot(steps, mean)
         plt.fill_between(steps, mean-sem, mean+sem, alpha=0.33)
-        plt.title(f'LSTM: {target} - {lstm_metric_dict[metric]}', fontsize=16)
+        plt.title(f'LSTM\n{translation["features"][target.replace("aa", "å").replace("_", " ")]} - {lstm_metric_dict[metric]}', fontsize=16)
         plt.xlabel('Steps', fontsize=14)
         plt.ylabel(lstm_metric_dict[metric], fontsize=14)
         plt.xticks(fontsize=12)
