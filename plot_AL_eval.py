@@ -164,7 +164,7 @@ for metric in all_ys['entropy'].keys():
         plt.fill_between(num_samples, mean-sem, mean+sem, alpha=0.33)
 
     plt.legend(loc='upper left')
-    plt.title(f'Active Learning - Danish BERT + Gyldendal\n{TARGET} - {metric_dict[metric]}', fontsize=16)
+    plt.title(f'Danish BERT + Gyldendal\n{TARGET} - {metric_dict[metric]}', fontsize=16)
     plt.xlabel(f'Num. of Training Samples', fontsize=14)
     plt.ylabel(f'{metric_dict[metric]}', fontsize=14)
     plt.xticks(fontsize=12)
