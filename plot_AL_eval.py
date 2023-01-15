@@ -25,10 +25,20 @@ NUM_LABELS = 5
 problem_type = 'multilabel'
 set_seed(SEED)
 
+metric_dict = {
+    'accuracy_exact':  'Val. Subset Acc.',
+    'accuracy_micro':  'Val. Acc. Micro',
+    'accuracy_macro':  'Val. Acc. Macro',
+    'precision_macro': 'Val. Precision Macro',
+    'recall_macro':    'Val. Recall Macro',
+    'f1_macro':        'Val. F1 Macro',
+    'AUROC_macro':     'Val. AUROC Macro',
+}
+
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
-# tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
-tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
+tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
+# tokenizer = AutoTokenizer.from_pretrained("Maltehb/danish-bert-botxo")
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
@@ -142,16 +152,24 @@ for func, cvs in all_logits.items():  # func name and dict of all cvs
                 all_ys[func][key] = np.vstack([all_ys[func][key], ys[key]])
     
 
-print('Plotting')
-for func in all_ys.keys():
-    sem  = np.std(all_ys[func]['accuracy_exact'], axis=0)/np.sqrt(all_ys[func]['accuracy_exact'].shape[0])
-    mean = np.mean(all_ys[func]['accuracy_exact'], axis=0)
-    print(mean)
-    plt.plot(num_samples, mean, marker='o', label=func)
-    plt.fill_between(num_samples, mean-sem, mean+sem, alpha=0.33)
 
-plt.legend()
-plt.savefig(f'imgs/AL/{TARGET}/accuracy_exact.png', bbox_inches="tight")
-plt.close()
+print('Plotting')
+
+for metric in all_ys['entropy'].keys():
+    plt.figure(figsize=(7, 5))
+    for func in all_ys.keys():
+        sem  = np.std(all_ys[func][metric], axis=0)/np.sqrt(all_ys[func][metric].shape[0])
+        mean = np.mean(all_ys[func][metric], axis=0)
+        plt.plot(num_samples, mean, marker='o', label=func.capitalize())
+        plt.fill_between(num_samples, mean-sem, mean+sem, alpha=0.33)
+
+    plt.legend(loc='upper left')
+    plt.title(f'Active Learning - Danish BERT + Gyldendal\n{TARGET} - {metric_dict[metric]}', fontsize=16)
+    plt.xlabel(f'Num. of Training Samples', fontsize=14)
+    plt.ylabel(f'{metric_dict[metric]}', fontsize=14)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.savefig(f'imgs/AL/{TARGET}/{metric}.png', bbox_inches="tight")
+    plt.close()
 
 print('Done')
