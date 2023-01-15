@@ -128,7 +128,6 @@ def get_right_wrong_preds(labels: np.ndarray, model_preds: np.ndarray) -> np.nda
 def overview_csv(models: list, TARGET: str, problem_type: str, labels: np.ndarray):
     df = pd.DataFrame(idx, columns=['index'])
     for model in models:
-        print(f'{model}')
         model_preds = get_model_preds(model, TARGET, problem_type)
         mask = get_right_wrong_preds(labels, model_preds)
         df.loc[:, model] = mask.astype(int)
@@ -139,10 +138,8 @@ def label_csv(models: list, TARGET: str, problem_type: str, labels: np.ndarray, 
     assert problem_type == 'multilabel', 'Problem type needs to be multilabel'
     
     for i, l in enumerate(label_names):
-        print(f'Label: {l}')
         df = pd.DataFrame(idx, columns=['index'])
         for model in models:
-            print(f'{model}')
             model_preds = get_model_preds(model, TARGET, problem_type)
             mask = get_right_wrong_preds(labels[:, i], model_preds[:, i])
             df.loc[:, model] = mask.astype(int)
@@ -151,6 +148,15 @@ def label_csv(models: list, TARGET: str, problem_type: str, labels: np.ndarray, 
 
 
 def ensemble_preds_csv(ensemble_models: list, idx: np.ndarray, cvs: np.ndarray, TARGET: str, problem_type: str, label_names: list):
+    if problem_type == 'multilabel':
+        multilabel_ensemble(ensemble_models, idx, cvs, TARGET, problem_type, label_names)
+    elif problem_type == 'multiclass':
+        multiclass_ensemble(ensemble_models, idx, cvs, TARGET, problem_type)
+    else:
+        raise Exception(f'Problem type not "multilabel" or "multiclass" but {problem_type}')
+
+
+def multilabel_ensemble(ensemble_models: list, idx: np.ndarray, cvs: np.ndarray, TARGET: str, problem_type: str, label_names: list):
     assert problem_type == 'multilabel', 'Problem type needs to be multilabel'
     
     df = pd.DataFrame(data={'index': idx, 'cvs': cvs})
@@ -167,6 +173,25 @@ def ensemble_preds_csv(ensemble_models: list, idx: np.ndarray, cvs: np.ndarray, 
     df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/ensemble_preds.csv', index=False)
 
 
+def multiclass_ensemble(ensemble_models: list, idx: np.ndarray, cvs: np.ndarray, TARGET: str, problem_type: str):
+    assert problem_type == 'multiclass', 'Problem type needs to be multiclass'
+    
+    df = pd.DataFrame(data={'index': idx, 'cvs': cvs})
+    ensemble_preds = np.array([])
+    for model in ensemble_models:
+        model_preds = get_model_preds(model, TARGET, problem_type)
+        if ensemble_preds.shape[0] == 0:
+            ensemble_preds = model_preds
+        else:
+            ensemble_preds = np.vstack([ensemble_preds, model_preds])
+    
+    bincounts = np.array([np.bincount(row, minlength=target_info[TARGET]['num_labels']) for row in ensemble_preds.T.astype(int)])
+    preds = np.array([np.argmax(row) if row[row > 1].any() else np.random.choice(row.shape[0], 1, p=row.astype(float)/np.sum(row))[0] for row in bincounts])
+    
+    df['predictions'] = preds
+    df.to_csv(f'prediction_analysis/{TARGET.replace("å", "aa")}/ensemble_preds.csv', index=False)
+        
+
 for TARGET in target_info.keys():
     print(f'Getting results for {TARGET}')
     problem_type = target_info[TARGET]['problem_type']
@@ -176,10 +201,12 @@ for TARGET in target_info.keys():
     
     overview_csv(logs_path_dict.keys(), TARGET, problem_type, labels)
     
+    ensemble_models = ['BERT_MLM', 'BabyBERTA', 'RandomForest']
+    ensemble_preds_csv(ensemble_models, idx, cvs, TARGET, problem_type, label_names)
+    
     if problem_type == 'multilabel':
         label_csv(logs_path_dict.keys(), TARGET, problem_type, labels, label_names)
-        ensemble_models = ['BERT_MLM', 'BabyBERTA', 'RandomForest']
-        ensemble_preds_csv(ensemble_models, idx, cvs, TARGET, problem_type, label_names)
+        
     
 
 TARGET = 'Semantisk univers'
