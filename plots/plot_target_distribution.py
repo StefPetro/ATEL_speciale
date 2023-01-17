@@ -73,7 +73,7 @@ def plot_distribution(category: str, **kwargs):
     
     plt.figure(figsize=(7, 5), dpi=300)
     plt.barh(idx, y)
-    plt.title(f'Distribution of labels: {category}', fontsize=16)
+    plt.title(f'Distribution of labels: {translation["features"][category]}', fontsize=16)
     plt.xlabel('Count', fontsize=14)
     plt.ylabel('Labels', fontsize=14)
     plt.xticks(fontsize=12)

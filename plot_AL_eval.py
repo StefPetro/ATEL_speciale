@@ -156,7 +156,7 @@ for func, cvs in all_logits.items():  # func name and dict of all cvs
 print('Plotting')
 
 for metric in all_ys['entropy'].keys():
-    plt.figure(figsize=(7, 5))
+    plt.figure(figsize=(7, 5), dpi=300)
     for func in all_ys.keys():
         sem  = np.std(all_ys[func][metric], axis=0)/np.sqrt(all_ys[func][metric].shape[0])
         mean = np.mean(all_ys[func][metric], axis=0)
