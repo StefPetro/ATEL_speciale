@@ -26,13 +26,13 @@ problem_type = 'multilabel'
 set_seed(SEED)
 
 metric_dict = {
-    'accuracy_exact':  'Val. Subset Acc.',
-    'accuracy_micro':  'Val. Acc. Micro',
-    'accuracy_macro':  'Val. Acc. Macro',
-    'precision_macro': 'Val. Precision Macro',
-    'recall_macro':    'Val. Recall Macro',
-    'f1_macro':        'Val. F1 Macro',
-    'AUROC_macro':     'Val. AUROC Macro',
+    'accuracy_exact':  'Test Subset Acc.',
+    'accuracy_micro':  'Test Acc. Micro',
+    'accuracy_macro':  'Test Acc. Macro',
+    'precision_macro': 'Test Precision Macro',
+    'recall_macro':    'Test Recall Macro',
+    'f1_macro':        'Test F1 Macro',
+    'AUROC_macro':     'Test AUROC Macro',
 }
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")

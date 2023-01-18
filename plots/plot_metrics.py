@@ -36,23 +36,23 @@ targets = [
 ]
 
 hf_metric_dict = {
-        'eval/AUROC_macro':    'Val. AUROC Macro',
-        'eval/accuracy_exact': 'Val. Subset Acc.',
-        'eval/accuracy_micro': 'Val. Acc. Micro',
-        'eval/accuracy_macro': 'Val. Acc. Macro',
-        'eval/f1_macro':       'Val. F1 Macro',
-        'eval/loss':           'Val Loss'
+        'eval/AUROC_macro':    'Test AUROC Macro',
+        'eval/accuracy_exact': 'Test Subset Acc.',
+        'eval/accuracy_micro': 'Test Acc. Micro',
+        'eval/accuracy_macro': 'Test Acc. Macro',
+        'eval/f1_macro':       'Test F1 Macro',
+        'eval/loss':           'Test Loss'
     }
 
 lstm_metric_dict = {
         'train_step_loss':       'Train Loss',
-        'val_epoch_AUROC_macro': 'Val. AUROC Macro',
-        'val_epoch_acc_exact':   'Val. Subset Acc.',
-        'val_epoch_acc_micro':   'Val. Acc. Micro',
-        'val_epoch_acc_macro':   'Val. Acc. Macro',
-        'val_epoch_f1_macro':    'Val. F1 Macro',
-        'val_epoch_loss':        'Val. Epoch Loss',
-        'val_step_loss':         'Val. Step Loss'
+        'val_epoch_AUROC_macro': 'Test AUROC Macro',
+        'val_epoch_acc_exact':   'Test Subset Acc.',
+        'val_epoch_acc_micro':   'Test Acc. Micro',
+        'val_epoch_acc_macro':   'Test Acc. Macro',
+        'val_epoch_f1_macro':    'Test F1 Macro',
+        'val_epoch_loss':        'Test Epoch Loss',
+        'val_step_loss':         'Test Step Loss'
     }
 
 model_title_dict = {

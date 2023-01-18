@@ -71,13 +71,16 @@ def plot_distribution(category: str, **kwargs):
     
     idx = [translation['labels'][category][i] for i in idx]
     
-    plt.figure(figsize=(7, 5), dpi=300)
-    plt.barh(idx, y)
+    fig, ax = plt.subplots(figsize=(7, 5), dpi=300)
+    bars = ax.barh(idx, y)
     plt.title(f'Distribution of labels: {translation["features"][category]}', fontsize=16)
     plt.xlabel('Count', fontsize=14)
     plt.ylabel('Labels', fontsize=14)
     plt.xticks(fontsize=12)
     plt.yticks(fontsize=12)
+    ax.bar_label(bars, color='tab:blue')
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(False)
     
     if xlim:
         plt.xlim(0, xlim)
