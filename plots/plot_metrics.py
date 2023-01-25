@@ -36,6 +36,7 @@ targets = [
 ]
 
 hf_metric_dict = {
+        'train/loss':          'Train Loss',
         'eval/AUROC_macro':    'Test AUROC Macro',
         'eval/accuracy_exact': 'Test Subset Acc.',
         'eval/accuracy_micro': 'Test Acc. Micro',
@@ -58,10 +59,10 @@ lstm_metric_dict = {
 model_title_dict = {
     'BERT': 'Danish BERT',
     'BERT_Gyldendal': 'Danish BERT + Gyldendal',
-    'BabyBERTa_WU': 'BørneBÆRTa $\div$ WU',
-    'BabyBERTa_WU_GW': 'BørneBÆRTa $+$ WU',
-    'BabyBERTa_noWU': 'BørneBÆRTa $\div$ WU $+$ GW',
-    'BabyBERTa_noWU_GW': 'BørneBÆRTa $+$ WU $+$ GW',
+    'BabyBERTa_WU': 'BørneBÆRTa $+$ WU',
+    'BabyBERTa_WU_GW': 'BørneBÆRTa $+$ WU $+$ GW',
+    'BabyBERTa_noWU': 'BørneBÆRTa $\div$ WU',
+    'BabyBERTa_noWU_GW': 'BørneBÆRTa $-$ WU $+$ GW',
     'BabyBERTa_GWstart_Gyldendal': 'BørneBÆRTa (GW $+$ Gyl)',
 }
 
@@ -88,12 +89,13 @@ def hf_get_all_cv(target: str='Genre', model: str='BERT'):
             elif metric in hf_metric_dict.keys():
                 all_metrics[metric] = np.vstack([all_metrics[metric], val[1]])
     
-    steps = data['eval/loss'][0]
+    steps = data['train/loss'][0]
+    N = len(steps)
     all_sem = {}
     all_mean = {}
     for metric, vals in all_metrics.items():
-        all_sem[metric]  = np.std(vals, axis=0)/np.sqrt(vals.shape[0])  # Standard error of the mean
-        all_mean[metric] = np.mean(vals, axis=0)
+        all_sem[metric]  = (np.std(vals, axis=0)/np.sqrt(vals.shape[0]))[:N]  # Standard error of the mean
+        all_mean[metric] = np.mean(vals, axis=0)[:N]
     return all_mean, all_sem, steps
 
 
