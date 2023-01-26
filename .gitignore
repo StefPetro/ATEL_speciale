@@ -14,7 +14,7 @@ baseline_logs/
 babyberta_logs/
 out_files
 batch_scripts
-prediction_analysis
+prediction_analysis/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
