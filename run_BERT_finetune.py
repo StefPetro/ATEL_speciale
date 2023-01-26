@@ -33,6 +33,7 @@ BATCH_ACCUMALATION = 4
 NUM_EPOCHS = 100
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY  = 0.01
+OUTPUT_ATTENTION = False
 set_seed(SEED)
 
 with open('target_info.yaml', 'r', encoding='utf-8') as f:
@@ -50,7 +51,7 @@ def tokenize_function(examples):
 
 problem_type = target_info[TARGET]['problem_type']
 NUM_LABELS   = target_info[TARGET]['num_labels']
-  
+
 print(f'STARTED TRAINING FOR: {TARGET}')
 print(f'PROBLEM TYPE: {problem_type}')
 
@@ -71,7 +72,14 @@ else:
 
 
 def compute_metrics(eval_pred):
-    logits, labels = eval_pred
+    output, labels = eval_pred
+    
+    if OUTPUT_ATTENTION:
+        logits = output[0]
+        attention = output[1]
+    else:
+        logits = output
+
     preds = logit_func(torch.tensor(logits))
     labels = torch.tensor(labels).int()
     
@@ -120,7 +128,7 @@ def compute_metrics(eval_pred):
     return metrics
     
 
-dataset = Dataset.from_pandas(df)
+dataset = Dataset.from_pandas(df.reset_index())
 token_dataset = dataset.map(tokenize_function, batched=True)
 
 kf = KFold(n_splits=NUM_SPLITS, shuffle=True, random_state=SEED)
@@ -138,9 +146,10 @@ for k in range(NUM_SPLITS):
                                                                num_labels=NUM_LABELS, 
                                                                problem_type=p_t,
                                                                label2id=label2id,
-                                                               id2label=id2label)
+                                                               id2label=id2label,
+                                                               output_attentions=OUTPUT_ATTENTION)
     
-    only_cls_layer = True
+    only_cls_layer = False
     if only_cls_layer:
         for param in list(model.bert.embeddings.parameters()):
             param.requires_grad = False
@@ -153,7 +162,7 @@ for k in range(NUM_SPLITS):
     
     logging_name = f'huggingface_logs'\
                    +f'/BERT_mlm_gyldendal'\
-                   +f'/only_cls_layer'\
+                   +f'/version_2'\
                    +f'/{TARGET.replace(" ", "_")}'\
                    +f'/BERT-BS{BATCH_SIZE}'\
                    +f'-BA{BATCH_ACCUMALATION}'\
@@ -203,10 +212,16 @@ for k in range(NUM_SPLITS):
     print('Make predictions:')
     test_dataset = val_dataset.remove_columns("labels")
     outputs = trainer.predict(test_dataset)
+    
+    if OUTPUT_ATTENTION:
+        logits = outputs.predictions[0]
+        attention = outputs.predictions[-1]
+    else:
+        logits = outputs.predictions
+    
     # print(compute_metrics((outputs.predictions, val_dataset['labels'])))
 
-    torch.save(outputs.predictions, f"{logging_name}/{TARGET}_CV{k+1}_logits.pt")
-    
+    torch.save(logits, f"{logging_name}/{TARGET}_CV{k+1}_logits.pt")
     ## Last garbage collection
     del model
     del trainer

@@ -8,7 +8,13 @@ checkpoints/
 batch_out_files
 huggingface_saves/
 imgs/
-test.py
+huggingface_logs/
+lightning_logs/
+baseline_logs/
+babyberta_logs/
+out_files/
+batch_scripts/
+prediction_analysis/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
