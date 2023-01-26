@@ -1,0 +1,21 @@
+Genre: 
+  problem_type: multilabel
+  num_labels: 15
+Tekstbånd:
+  problem_type: multilabel
+  num_labels: 4
+Fremstillingsform:
+  problem_type: multilabel
+  num_labels: 8
+Semantisk univers:
+  problem_type: multilabel
+  num_labels: 5
+Stemmer:
+  problem_type: multilabel
+  num_labels: 3
+Perspektiv:
+  problem_type: multiclass
+  num_labels: 2
+Holistisk vurdering:
+  problem_type: multiclass
+  num_labels: 6

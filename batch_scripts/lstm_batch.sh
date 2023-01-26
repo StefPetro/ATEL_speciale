@@ -6,11 +6,11 @@
 ### -- set the job Name -- 
 #BSUB -J run_model
 ### -- ask for number of cores (default: 1) -- 
-#BSUB -n 20
+#BSUB -n 4
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=2GB]"
+#BSUB -R "rusage[mem=8GB]"
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 
@@ -37,5 +37,4 @@ module load cudnn/v8.3.0.98-prod-cuda-11.5
 source ./venv/bin/activate
 # echo $VIRTUAL_ENV
 
-python3 run_lstm.py
-
+python3 run_lstm.py --target_col "Semantisk univers" --cv 1

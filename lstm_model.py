@@ -5,11 +5,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset, random_split, dataset
 from sklearn.model_selection import KFold
-
 import fasttext
 import pytorch_lightning as pl
-import torchmetrics
+from torchmetrics.classification import MultilabelAccuracy
+from torchmetrics.functional.classification import multilabel_exact_match
+from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
+from torchmetrics.functional.classification import multilabel_recall, multilabel_precision
+from torchmetrics.functional.classification import multiclass_accuracy, multiclass_f1_score
+from torchmetrics.functional.classification import multiclass_recall, multiclass_precision
+from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
 from data_clean import *
+
 
 settings = {
     'multi_label': True,
@@ -31,93 +37,153 @@ class lstm_text(pl.LightningModule):
         self.n_features    = kwargs.get('n_features',    300)
         self.hidden_size   = kwargs.get('hidden_size',   256)
         self.num_layers    = kwargs.get("num_layers",    1)
-        self.num_l1        = kwargs.get("num_l1",        256)
-        self.dropout       = kwargs.get("dropout",       0.2)
+        self.l1_size       = kwargs.get('l1_size',       512)
+        self.l2_size       = kwargs.get('l2_size',       256)
+        self.dropout_val   = kwargs.get("dropout",       0.2)
         self.batch_size    = kwargs.get("batch_size",    32)
         self.learning_rate = kwargs.get('learning_rate', 1e-4)
         self.output_size   = kwargs.get('output_size',   1)
-
+        
         self.save_hyperparameters()
+        
+        # self.best_model_logits = None
+        # self.best_epoch = 0
+        # self.epoch = 0
         
         self.lstm = nn.LSTM(input_size    = self.n_features,
                             hidden_size   = self.hidden_size,
                             num_layers    = self.num_layers,
-                            dropout       = self.dropout,
+                            dropout       = self.dropout_val,
                             bidirectional = True,
                             batch_first   = True)
 
-        self.dropout = nn.Dropout(p=0.2)
+        self.l1        = nn.Linear(in_features  = self.hidden_size*2,  # multiplied by 2 if bidirectional,
+                                   out_features = self.l1_size)
         
-        self.l1        = nn.Linear(in_features  = self.hidden_size*2,  # times 2 if lstm is bidirectional
-                                   out_features = self.num_l1)
+        self.l2        = nn.Linear(in_features  = self.l1_size,
+                                   out_features = self.l2_size)
         
-        self.out_layer = nn.Linear(in_features  = self.num_l1,
+        self.out_layer = nn.Linear(in_features  = self.l2_size,
                                    out_features = self.output_size)
         
         
+        self.dropout = nn.Dropout(p=self.dropout_val)
+        
         if self.multi_label:  # if we are trying to solve a multi label problem
             print('Set to multi label classification')
-            self.loss_func = nn.BCEWithLogitsLoss()
-            self.accuracy = torchmetrics.Accuracy(subset_accuracy=True)
-            self.logit_func = nn.Sigmoid()
+            self.loss_func  = nn.BCEWithLogitsLoss()
+            self.logit_func = nn.Sigmoid()            
+            
         else:
             print('Set to multi class classification')
-            self.loss_func = nn.CrossEntropyLoss()
-            self.accuracy = torchmetrics.Accuracy(subset_accuracy=False)
+            self.loss_func  = nn.CrossEntropyLoss()
             self.logit_func = nn.Softmax()
             
     
+    def compute_metrics(self, preds, targets, logit_func, multi_label, current):
+        """ Function that compute relevant metrics to log """
+        
+        preds = logit_func(preds)
+        
+        if multi_label:
+            acc_exact = multilabel_exact_match(preds, targets, num_labels=self.output_size)
+            acc_macro = multilabel_accuracy(preds, targets, num_labels=self.output_size) 
+            # precision_macro = multilabel_precision(preds, targets, num_labels=self.output_size)
+            # recall_macro = multilabel_recall(preds, targets, num_labels=self.output_size)
+            f1_macro = multilabel_f1_score(preds, targets, num_labels=self.output_size)
+            auroc_macro = multilabel_auroc(preds, targets, num_labels=self.output_size, average="macro", thresholds=None)
+            
+            metrics = {
+                f'{current}_acc_exact':       acc_exact,
+                f'{current}_acc_macro':       acc_macro,
+                # f'{current}_step_precision_macro': precision_macro,
+                # f'{current}_step_recall_macro':    recall_macro,
+                f'{current}_f1_macro':        f1_macro,
+                f'{current}_AUROC_macro':     auroc_macro
+            }
+
+        else:
+            acc_micro = multiclass_accuracy(preds, targets, num_classes=self.output_size, average='micro')
+            acc_macro = multiclass_accuracy(preds, targets, num_classes=self.output_size, average='macro')
+            # precision_macro = multiclass_precision(preds, targets, num_classes=self.output_size)
+            # recall_macro = multiclass_recall(preds, targets, num_classes=self.output_size)
+            f1_macro = multiclass_f1_score(preds, targets, num_classes=self.output_size)
+            auroc_macro = multiclass_auroc(preds, targets, num_classes=self.output_size, average="macro", thresholds=None)
+            
+            metrics = {
+                f'{current}_acc_micro':       acc_micro,
+                f'{current}_acc_macro':       acc_macro,
+                # f'{current}_step_precision_macro': precision_macro,
+                # f'{current}_step_recall_macro':    recall_macro,
+                f'{current}_f1_macro':        f1_macro,
+                f'{current}_AUROC_macro':     auroc_macro
+            }
+            
+        return metrics
+                
+            
     def configure_optimizers(self):
         optim = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=1e-3)
         return optim
     
     
     def forward(self, x):
-        # lstm input: (N, L, H_in) = (batch_size, seq_len, embedding_size)
+        # lstm input:
+        # (N, L, H_in) = (batch_size, seq_len, embedding_size)
         lstm_out, (h_n, c_n) = self.lstm(x)
-        out = F.gelu(lstm_out[:, -1])
-        out = self.dropout(out)
-        out = self.l1(out)
-        out = F.gelu(out)
-        out = self.dropout(out)
-        out = self.out_layer(out)
+        lstm_out = self.dropout(lstm_out[:, -1])
+        
+        l1  = F.gelu(self.dropout(self.l1(lstm_out)))
+        l2  = F.gelu(self.dropout(self.l2(l1)))
+        out = self.out_layer(l2)
         return out
     
     
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
-        y_hat = self(x)
-        loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(self.logit_func(y_hat), y.int())
-        
-        self.log('train_loss_step', loss)
-        self.log('train_acc_step', acc)
-        return {'loss': loss, 'acc': acc}
+        preds = self(x)
+        loss = self.loss_func(preds, y)
+
+        # metrics = self.compute_metrics(preds, y, self.logit_func, self.multi_label, 'train_step')
+        self.log('train_step_loss', loss)
+        # self.log_dict(metrics)
+        return {'loss': loss}
     
     
     def validation_step(self, val_batch, batch_idx):
         x, y = val_batch
-        y_hat = self(x)
-        loss = self.loss_func(y_hat, y)
-        acc = self.accuracy(self.logit_func(y_hat), y.int())
+        preds = self(x)
+        loss = self.loss_func(preds, y)
         
-        self.log('val_loss_step', loss)
-        self.log('val_acc_step', acc)
-        return {'loss': loss, 'acc': acc}
+        self.log('val_step_loss', loss)
+        return {'preds': preds, 'target': y}
 
     
     def validation_epoch_end(self, outputs) -> None:
-        loss = torch.stack([out['loss'] for out in outputs]).mean()
-        self.log("avg_val_loss", loss)
-
-        acc = torch.stack([out['acc'] for out in outputs]).mean()
-        self.log("avg_val_acc", acc)
+        all_preds = torch.cat([out['preds'] for out in outputs])
+        y         = torch.cat([out['target'] for out in outputs])
+                
+        loss = self.loss_func(all_preds, y).mean()
+        self.log("val_epoch_loss", loss)
+        
+        metrics = self.compute_metrics(all_preds, y, self.logit_func, self.multi_label, 'val_epoch')
+        self.log_dict(metrics)
+        
+        # self.best_model_logits = all_preds
+        # self.best_epoch = self.epoch
+        # self.epoch += 1
+        # acc = torch.stack([out['acc'] for out in outputs]).mean()
+        # self.log("avg_val_acc", acc)
+    
+    def predict_step(self, batch, batch_idx: int, dataloader_idx: int = 0):
+        # batch is a list of: [inputs, targets]
+        return self(batch[0])
 
 
 class lstm_data(pl.LightningDataModule):
     def __init__(
             self,
-            book_col,
+            book_col: atel.data.BookCollection,
             target_col: str,
             ft: fasttext.FastText,
             seq_len: int = 256,
@@ -125,6 +191,7 @@ class lstm_data(pl.LightningDataModule):
             k: int = 0,
             seed: int = 42,
             num_splits: int = 10,
+            problem_type: str = 'multilabel'
         ):
         super().__init__()
         
@@ -136,7 +203,7 @@ class lstm_data(pl.LightningDataModule):
         self.seq_len        = seq_len
         self.seed           = seed
         self.num_splits     = num_splits
-    
+        self.problem_type   = problem_type
     
     def setup(self, stage: Optional[str] = None):
         
@@ -144,8 +211,11 @@ class lstm_data(pl.LightningDataModule):
         target_ids, targets, labels = get_labels(self.book_col, self.target_col)
 
         mask = torch.isin(torch.from_numpy(target_ids), torch.from_numpy(book_ids))
-        y = torch.from_numpy(targets[mask]).float()
-               
+        if self.problem_type == 'multilabel':
+            y = torch.from_numpy(targets[mask]).float()
+        elif self.problem_type == 'multiclass':
+            y = torch.from_numpy(targets[mask]).long()
+        
         full_data = TensorDataset(X, y)
         
         kf = KFold(n_splits=self.num_splits, shuffle=True, random_state=self.seed)
@@ -166,6 +236,5 @@ class lstm_data(pl.LightningDataModule):
         return DataLoader(self.val_data, batch_size=self.batch_size)
 
 
-
-
-
+    def predict_dataloader(self):
+        return DataLoader(self.val_data, batch_size=self.batch_size)
