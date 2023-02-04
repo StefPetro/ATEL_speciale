@@ -1,8 +1,7 @@
 #!/bin/sh 
-
 ### General options 
 ### -- specify queue -- 
-#BSUB -q gpuv100
+#BSUB -q gpua100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
 #BSUB -J AL_Holistisk_vurdering_8
@@ -11,7 +10,7 @@
 ### -- specify that the cores must be on the same host -- 
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=2GB]"
+#BSUB -R "rusage[mem=12GB]"
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 
@@ -24,13 +23,18 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
-#BSUB -oo batch_out/AL/AL_Holistisk_vurdering_8.out
-#BSUB -eo batch_out/AL/AL_Holistisk_vurdering_8.err
+#BSUB -oo ./out_files/AL/random/AL_Holistisk_vurdering.out
+#BSUB -eo ./out_files/AL/random/AL_Holistisk_vurdering.err
+
+# here follow the commands you want to execute 
 
 # Load dependencies
 module load python3/3.9.14
+#module load gcc/10.3.0
+#module load cuda/11.5
+module load cudnn/v8.3.0.98-prod-cuda-11.5
 
-source ../thesis/bin/activate
+source ./venv/bin/activate
+# echo $VIRTUAL_ENV
 
-# here follow the commands you want to execute 
-python3.9 run_BERT_AL.py --target_col "Holistisk vurdering" --cv 8 --acq_function "random"
+python3 run_BERT_AL.py --target_col "Holistisk vurdering" --cv 8 --acq_function "random"

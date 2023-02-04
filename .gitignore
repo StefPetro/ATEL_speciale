@@ -10,6 +10,15 @@ models/
 *_saves*/
 *_logs*/
 *.hf
+batch_out_files
+huggingface_saves/
+imgs/
+huggingface_logs/
+lightning_logs/
+baseline_logs/
+babyberta_logs/
+out_files
+prediction_analysis/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

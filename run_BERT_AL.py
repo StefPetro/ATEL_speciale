@@ -2,12 +2,14 @@ import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer
-from torchmetrics.functional.classification import multilabel_exact_match
-from torchmetrics.functional.classification import multilabel_accuracy, multilabel_f1_score
-from torchmetrics.functional.classification import multilabel_recall, multilabel_precision
-from torchmetrics.functional.classification import multiclass_accuracy, multiclass_f1_score
-from torchmetrics.functional.classification import multiclass_recall, multiclass_precision
-from torchmetrics.functional.classification import multiclass_auroc, multilabel_auroc
+from torchmetrics.functional.classification import (
+    multilabel_exact_match,
+    multilabel_accuracy, multiclass_accuracy,
+    multilabel_f1_score, multiclass_f1_score,
+    multilabel_recall, multiclass_recall,
+    multilabel_precision, multiclass_precision,
+    multilabel_auroc, multiclass_auroc
+)
 from datasets import Dataset, concatenate_datasets
 from sklearn.model_selection import KFold
 from atel.data import BookCollection
@@ -68,7 +70,7 @@ with open('target_info.yaml', 'r', encoding='utf-8') as f:
 
 book_col = BookCollection(data_file="./data/book_col_271120.pkl")
 
-tokenizer = AutoTokenizer.from_pretrained("./models/BERT_mlm_gyldendal")
+tokenizer = AutoTokenizer.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal")
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], padding="max_length", truncation=True)
@@ -155,11 +157,14 @@ all_splits = [k for k in kf.split(token_dataset)]
 
 def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):    
     
-    model = AutoModelForSequenceClassification.from_pretrained("./models/BERT_mlm_gyldendal", 
-                                                               num_labels=NUM_LABELS, 
-                                                               problem_type=p_t,
-                                                               label2id=label2id,
-                                                               id2label=id2label)
+    def model_init():
+        model = AutoModelForSequenceClassification.from_pretrained("../../../../../work3/s173991/huggingface_models/BERT_mlm_gyldendal", 
+                                                                num_labels=NUM_LABELS, 
+                                                                problem_type=p_t,
+                                                                label2id=label2id,
+                                                                id2label=id2label)
+        return model
+        
     # +f'-ep{NUM_EPOCHS}'\
     logging_name = f'huggingface_logs'\
                     +f'/active_learning'\
@@ -183,7 +188,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
     
     training_args = TrainingArguments(
             # [17:] removes 'huggingface_logs'
-            output_dir=f'./huggingface_saves/{logging_name[17:]}',
+            output_dir=f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}',
             # save_strategy='steps',
             # save_steps=43,
             save_total_limit=1,
@@ -207,7 +212,7 @@ def AL_train(labeled_ds: Dataset, unlabeled_ds: Dataset, test_ds: Dataset):
         )
     
     trainer = Trainer(
-        model=model,    
+        model_init=model_init,    
         args=training_args,
         train_dataset=labeled_ds,
         eval_dataset=test_ds,
@@ -317,8 +322,8 @@ while unlabeled_ds.num_rows > 0:
     
     
     ## Removes the saved checkpoints, as they take too much space
-    for f in os.listdir(f'./huggingface_saves/{logging_name[17:]}'):
-        shutil.rmtree(os.path.join(f'./huggingface_saves/{logging_name[17:]}', f))
+    for f in os.listdir(f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}'):
+        shutil.rmtree(os.path.join(f'../../../../../work3/s173991/huggingface_saves/{logging_name[17:]}', f))
 
 # Save the test logits for future analysis
 # +f'-ep{NUM_EPOCHS}'\

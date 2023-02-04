@@ -21,3 +21,4 @@ def random_acquisition(logits, problem_type='multiclass') -> torch.Tensor:
     logits = torch.from_numpy(logits)
     N, M  = logits.shape
     return torch.rand(N)  # shape: (num unlabeled data)
+
