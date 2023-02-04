@@ -18,14 +18,14 @@ from data_clean import *
 
 
 settings = {
-    'multi_label': True,
-    'n_features': 300, 
-    "hidden_size": 256, 
-    "num_layers": 1, 
-    "dropout": 0.2, 
-    "batch_size": 32, 
-    "learning_rate" : 1e-4,
-    "output_size": 1
+    "multi_label": True,
+    "n_features": 300,
+    "hidden_size": 256,
+    "num_layers": 1,
+    "dropout": 0.2,
+    "batch_size": 32,
+    "learning_rate": 1e-4,
+    "output_size": 1,
 }
 
 
@@ -123,10 +123,11 @@ class lstm_text(pl.LightningModule):
                 
             
     def configure_optimizers(self):
-        optim = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=1e-3)
+        optim = torch.optim.AdamW(
+            self.parameters(), lr=self.learning_rate, weight_decay=1e-3
+        )
         return optim
-    
-    
+
     def forward(self, x):
         # lstm input:
         # (N, L, H_in) = (batch_size, seq_len, embedding_size)
@@ -137,8 +138,7 @@ class lstm_text(pl.LightningModule):
         l2  = F.gelu(self.dropout(self.l2(l1)))
         out = self.out_layer(l2)
         return out
-    
-    
+
     def training_step(self, train_batch, batch_idx):
         x, y = train_batch
         preds = self(x)
@@ -206,7 +206,7 @@ class lstm_data(pl.LightningDataModule):
         self.problem_type   = problem_type
     
     def setup(self, stage: Optional[str] = None):
-        
+
         book_ids, X = get_fasttext_embeddings(self.book_col, self.ft, self.seq_len)
         target_ids, targets, labels = get_labels(self.book_col, self.target_col)
 
@@ -217,21 +217,19 @@ class lstm_data(pl.LightningDataModule):
             y = torch.from_numpy(targets[mask]).long()
         
         full_data = TensorDataset(X, y)
-        
+
         kf = KFold(n_splits=self.num_splits, shuffle=True, random_state=self.seed)
         all_splits = [k for k in kf.split(full_data)]
-        
+
         train_idx, val_idx = all_splits[self.k]
         train_idx, val_idx = train_idx.tolist(), val_idx.tolist()
-        
-        self.train_data = dataset.Subset(full_data, train_idx)
-        self.val_data   = dataset.Subset(full_data, val_idx)
 
-    
+        self.train_data = dataset.Subset(full_data, train_idx)
+        self.val_data = dataset.Subset(full_data, val_idx)
+
     def train_dataloader(self):
         return DataLoader(self.train_data, batch_size=self.batch_size)
 
-    
     def val_dataloader(self):
         return DataLoader(self.val_data, batch_size=self.batch_size)
 

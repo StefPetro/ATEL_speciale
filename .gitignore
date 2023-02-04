@@ -3,8 +3,13 @@ data/..
 fasttext_model/
 lightning_logs/checkpoints
 checkpoints/
+models/
 *.err
 *.out
+*.flake8
+*_saves*/
+*_logs*/
+*.hf
 batch_out_files
 huggingface_saves/
 imgs/
@@ -13,7 +18,6 @@ lightning_logs/
 baseline_logs/
 babyberta_logs/
 out_files
-batch_scripts
 prediction_analysis/
 
 # Byte-compiled / optimized / DLL files

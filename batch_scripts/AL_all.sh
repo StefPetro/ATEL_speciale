@@ -14,3 +14,14 @@ do
         done
     done
 done
+
+for a in $acq_function
+do
+    for l in $list
+    do
+        for t in $target
+        do
+            bsub < ./batch_scripts/AL_scripts/$a/$t/AL_${t}_cv$l.sh
+        done
+    done
+done

@@ -38,3 +38,6 @@ source ./venv/bin/activate
 # echo $VIRTUAL_ENV
 
 python3 run_BERT_AL.py --target_col "Fremstillingsform" --cv 3 --acq_function "random"
+
+# here follow the commands you want to execute 
+python3.9 run_BERT_AL.py --target_col "Fremstillingsform" --cv 3 --acq_function "random"

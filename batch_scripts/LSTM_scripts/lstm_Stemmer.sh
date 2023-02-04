@@ -4,6 +4,15 @@
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set the job Name -- 
+<<<<<<<< HEAD:batch_scripts/lstm.sh
+#BSUB -J lstm_genre
+### -- ask for number of cores (default: 1) -- 
+#BSUB -n 8
+### -- specify that the cores must be on the same host -- 
+#BSUB -R "span[hosts=1]"
+### -- specify that we need 2GB of memory per core/slot -- 
+#BSUB -R "rusage[mem=8GB]"
+========
 #BSUB -J LSTM_Stemmer
 ### -- ask for number of cores (default: 1) -- 
 #BSUB -n 4
@@ -11,6 +20,7 @@
 #BSUB -R "span[hosts=1]"
 ### -- specify that we need 2GB of memory per core/slot -- 
 #BSUB -R "rusage[mem=4GB]"
+>>>>>>>> main:batch_scripts/LSTM_scripts/lstm_Stemmer.sh
 ### -- set walltime limit: hh:mm -- 
 #BSUB -W 24:00 
 ### -- set the email address -- 
@@ -23,9 +33,14 @@
 #BSUB -N 
 ### -- Specify the output and error file. %J is the job-id -- 
 ### -- -o and -e mean append, -oo and -eo mean overwrite -- 
+<<<<<<<< HEAD:batch_scripts/lstm.sh
+#BSUB -o batch_out/lstm_genre.out
+#BSUB -e batch_out/lstm_genre.err
+========
 #BSUB -oo ./out_files/LSTM/LSTM_Stemmer.out
 #BSUB -eo ./out_files/LSTM/LSTM_Stemmer.err
 
+>>>>>>>> main:batch_scripts/LSTM_scripts/lstm_Stemmer.sh
 
 # here follow the commands you want to execute 
 

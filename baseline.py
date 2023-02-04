@@ -1,55 +1,87 @@
-import gc
-import re
-
 import lemmy
 import numpy as np
 import pandas as pd
 import spacy
+import torch
+import yaml
 from nltk.corpus import stopwords
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.linear_model import RidgeClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.naive_bayes import GaussianNB, MultinomialNB
 from sklearn.model_selection import KFold
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.naive_bayes import GaussianNB
+from yaml import CLoader
 
 from atel.data import BookCollection
+from compute_metrics import compute_metrics
 from data_clean import *
+
+import os
 
 ## Set seed
 set_seed(42)
 
+with open("target_info.yaml", "r", encoding="utf-8") as f:
+    target_info = yaml.load(f, Loader=CLoader)
 
-def evaluator(X, target_col, clf):
+clf_dict = {"RidgeClassifier(class_weight='balanced')": 'RidgeClassifier',
+            'GaussianNB()': 'GaussianNB',
+            'RandomForestClassifier(n_estimators=1000, random_state=42)': 'RandomForest',
+}
+
+
+def evaluator(book_col, X, target_col, clf):
+    assert (
+        target_col in target_info.keys()
+    )  # checks if targets is part of the actual problem columns
+
+    problem_type = target_info[target_col].get("problem_type")
+    multi_label = True if problem_type == 'multilabel' else False
+    num_labels = target_info[target_col].get("num_labels")
 
     target_ids, targets, labels = get_labels(book_col, target_col)
 
     mask = np.isin(target_ids, book_ids)
     y = targets[mask]
 
-    print(f"Number of samples: {y.shape[0]}")
-    print(f"Number of labels: {y.shape[1]}")
-    print(labels)
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-    model = MultiOutputClassifier(clf)
-    model.fit(X_train, y_train)
-
-    y_pred = model.predict(X_test)
+    if multi_label:
+        # Multi label classification
+        model = MultiOutputClassifier(clf)
+    else:
+        model = clf
 
     kf = KFold(n_splits=10, shuffle=True, random_state=42)
+    all_splits = [k for k in kf.split(X)]
 
-    # print(classification_report(y_test, y_pred))
-    acc = accuracy_score(y_test, y_pred)
-    cv_score = np.mean(cross_val_score(model, X_train, y_train, cv=kf))
+    metrics = []
+    for k in range(10):
+        train_idx, val_idx = all_splits[k]
 
-    print(f"Accuracy Score: {acc}")
-    print(f"CV score: {cv_score}")
+        X_train = X[train_idx]
+        y_train = y[train_idx]
+        X_val = X[val_idx]
+        y_val = y[val_idx]
 
-    return acc, cv_score
+        model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_val)
+
+        y_pred = torch.Tensor(y_pred)
+        y_val = torch.tensor(y_val)
+
+        # path = f'./baseline/{clf_dict[str(clf)]}/{target_col}/CV_{k+1}'
+        # os.makedirs(path, exist_ok = True) 
+
+        # torch.save(y_pred, f'{path}/preds.pt')
+
+        metrics.append(compute_metrics(y_pred, y_val, multi_label, num_labels))
+
+    metrics_df = pd.DataFrame(metrics)
+    cv_score = metrics_df.mean(axis=0)
+
+    sem = np.std(metrics_df, axis=0) / np.sqrt(len(metrics_df))
+    return cv_score, sem
 
 
 ## Initial load and clean
@@ -78,32 +110,38 @@ X = tfidfvectorizer.fit_transform(documents).toarray()
 
 target_cols = [
     "Genre",
-    "Perspektiv",
     "Tekstbånd",
     "Fremstillingsform",
     "Semantisk univers",
-    "Holistisk vurdering",
     "Stemmer",
+    "Perspektiv",
+    "Holistisk vurdering",
 ]
 
+classifiers = [
+    RidgeClassifier(class_weight='balanced'),
+    # GaussianNB(),
+    # RandomForestClassifier(n_estimators=1000, random_state=42),
+]
 
-# clf = MultinomialNB()
-# clf = RandomForestClassifier(n_estimators=1000, random_state=42)
-clf = RidgeClassifier()
-# clf = GaussianNB()
+for clf in classifiers:
+    scores = pd.DataFrame()
+    SEMs = pd.DataFrame()
+    for t in target_cols:
+        cv, sem = evaluator(book_col, X, t, clf)
+        scores[t] = cv
+        SEMs[t] = sem
 
-accuracy = []
-cv_score = []
+    print(f"Classifier: {clf}")
+    print(
+        ((scores * 100).round(1)).astype(str)
+        + " \pm "
+        + ((SEMs * 100).round(1)).astype(str)
+    )
+    print(
+        (scores.mean(axis=1) * 100).round(1).astype(str)
+        + " \pm "
+        + (SEMs.mean(axis=1) * 100).round(1).astype(str)
+    )
 
-scores = {}
-for t in target_cols:
-    acc, cv = evaluator(X, t, clf)
-    accuracy.append(acc)
-    cv_score.append(cv)
-
-    scores[t] = {"accuracy": acc, "cv": cv}
-
-print(pd.DataFrame(scores))
-
-print(np.mean(accuracy))
-print(np.mean(cv_score))
+    # print(SEMs)

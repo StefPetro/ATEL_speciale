@@ -146,17 +146,17 @@ def get_labels(
 
 
 def get_fasttext_embeddings(
-        book_col: atel.data.BookCollection, 
-        ft: fasttext.FastText,
-        seq_len: int
-    
-    ) -> torch.Tensor:
+    book_col: atel.data.BookCollection, ft: fasttext.FastText, seq_len: int
+) -> torch.Tensor:
     book_ids, texts = clean_book_collection_texts(book_col, lowercase=False)
 
-    el = [torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(' ')])) for t in texts]
+    el = [
+        torch.Tensor(np.array([ft.get_word_vector(w) for w in t.split(" ")]))
+        for t in texts
+    ]
     el_padded = pad_sequence(el, batch_first=True)[:, :seq_len, :]
-    
-    assert el_padded.shape[1] == seq_len, 'Sequence length is not equal max length'
+
+    assert el_padded.shape[1] == seq_len, "Sequence length is not equal max length"
 
     return book_ids, el_padded
 
