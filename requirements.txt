@@ -8,6 +8,6 @@ numpy
 pandas
 pytorch_lightning==1.7.7
 scikit_learn
-torch==1.12.1
+torch==1.13.1
 torchmetrics==0.10.0
 transformers
